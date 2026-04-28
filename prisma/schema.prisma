@@ -1,0 +1,89 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nis       String   @unique
+  name      String
+  password  String
+  role      Role     @default(STUDENT)
+  status    String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  entries   Entry[]
+  comments  Comment[]
+  reactions Reaction[]
+  auditLogs AuditLog[]
+}
+
+model Entry {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @db.Text
+  mood      String
+  moodLabel String
+  ref1      String?  @db.Text
+  ref2      String?  @db.Text
+  ref3      String?  @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  comments  Comment[]
+  reactions Reaction[]
+  viewCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String   @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  entryId   String
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([entryId])
+  @@index([userId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  type      String   // e.g., "LOVE", "CLAP", "SUPPORT"
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  entryId   String
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, entryId])
+  @@index([entryId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String   // e.g., "LOGIN", "CREATE_ENTRY", "DELETE_USER"
+  details   String?  @db.Text
+  ipAddress String?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
