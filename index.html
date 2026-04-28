@@ -2,9 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>JurnalKu SMK Enterprise</title>
     <script>
+      // Disable right-click context menu
+      document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+      // Disable keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Ctrl+A select all exception handled)
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12') { e.preventDefault(); return false; }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
+      });
       (function() {
         const originalFetch = window.fetch;
         try {

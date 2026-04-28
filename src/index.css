@@ -10,6 +10,17 @@
 @layer base {
   body {
     @apply bg-[#0f1117] text-[#e8e4dc] selection:bg-[#f4a261]/30 selection:text-white antialiased;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Tetap boleh select teks di input dan textarea */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
   }
 }
 
