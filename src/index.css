@@ -9,7 +9,7 @@
 
 @layer base {
   body {
-    @apply bg-[#0f1117] text-[#e8e4dc] selection:bg-[#f4a261]/30 selection:text-white antialiased;
+    @apply bg-white text-gray-800 selection:bg-emerald-100 selection:text-emerald-800 antialiased;
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
@@ -24,6 +24,33 @@
   }
 }
 
+/* ===== Animated Background Blobs ===== */
+@keyframes blob1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  25%  { transform: translate(40px, -60px) scale(1.08); }
+  50%  { transform: translate(-20px, 30px) scale(0.94); }
+  75%  { transform: translate(30px, 10px) scale(1.04); }
+}
+@keyframes blob2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33%  { transform: translate(-50px, 40px) scale(1.10); }
+  66%  { transform: translate(25px, -35px) scale(0.92); }
+}
+@keyframes blob3 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50%  { transform: translate(35px, -25px) scale(1.06); }
+}
+@keyframes blob4 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  40%  { transform: translate(-30px, -20px) scale(1.05); }
+  70%  { transform: translate(20px, 30px) scale(0.96); }
+}
+
+.blob-1 { animation: blob1 22s ease-in-out infinite; }
+.blob-2 { animation: blob2 28s ease-in-out infinite; }
+.blob-3 { animation: blob3 18s ease-in-out infinite; }
+.blob-4 { animation: blob4 24s ease-in-out infinite; }
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
@@ -32,9 +59,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(16, 185, 129, 0.2);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(16, 185, 129, 0.4);
 }

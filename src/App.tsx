@@ -111,10 +111,10 @@ export default function App() {
     setLoading(false);
   }, []);
 
-  if (loading) return <div className="h-screen bg-[#0f1117] flex items-center justify-center text-[#f4a261]">
+  if (loading) return <div className="h-screen bg-linear-to-br from-emerald-50 to-white flex items-center justify-center text-emerald-600">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-t-[#f4a261] border-white/5 rounded-full animate-spin" />
-      <span className="text-xs uppercase tracking-widest font-mono">Memuat Sistem...</span>
+      <div className="w-12 h-12 border-4 border-t-emerald-500 border-emerald-100 rounded-full animate-spin" />
+      <span className="text-xs uppercase tracking-widest font-mono text-emerald-600">Memuat Sistem...</span>
     </div>
   </div>;
 
@@ -124,11 +124,21 @@ export default function App() {
   }} />;
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-[#e8e4dc] font-sans selection:bg-[#f4a261]/20 selection:text-[#f4a261]">
+    <div className="min-h-screen bg-white text-gray-800 font-sans selection:bg-emerald-100 selection:text-emerald-800 relative overflow-x-hidden">
+      {/* ===== Animated Background Blobs ===== */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+        <div className="blob-1 absolute top-[-15%] right-[-5%] w-125 h-125 bg-emerald-100 rounded-full blur-3xl opacity-50" />
+        <div className="blob-2 absolute bottom-[-10%] left-[-8%] w-96 h-96 bg-teal-100 rounded-full blur-3xl opacity-40" />
+        <div className="blob-3 absolute top-[35%] left-[55%] w-72 h-72 bg-emerald-50 rounded-full blur-2xl opacity-60" />
+        <div className="blob-4 absolute top-[60%] right-[20%] w-64 h-64 bg-green-50 rounded-full blur-2xl opacity-50" />
+      </div>
+
+      {/* Content above blobs */}
+      <div className="relative z-10">
       {/* Top Nav */}
-      <nav className="h-12 sm:h-14 border-b border-white/5 bg-[#13161f]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50">
+      <nav className="h-12 sm:h-14 border-b border-gray-100 bg-white/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="font-serif text-base sm:text-lg font-bold text-[#f4a261]">Jurnal Self Acceptance</span>
+          <span className="font-serif text-base sm:text-lg font-bold text-[#10b981]">Jurnal Self Acceptance</span>
         </div>
         
         <div className="flex items-center gap-3">
@@ -137,16 +147,16 @@ export default function App() {
             className="flex items-center gap-2 group transition-all"
           >
             <div className="text-right hidden sm:block">
-              <div className="text-xs font-medium leading-none mb-0.5 group-hover:text-[#f4a261] transition-colors">{user.name}</div>
-              <div className="text-[9px] text-white/30 tracking-tighter uppercase font-mono">{user.role} • {user.nis}</div>
+              <div className="text-xs font-medium leading-none mb-0.5 group-hover:text-emerald-600 transition-colors">{user.name}</div>
+              <div className="text-[9px] text-gray-400 tracking-tighter uppercase font-mono">{user.role} • {user.nis}</div>
             </div>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#f4a261] flex items-center justify-center text-[#0f1117] font-bold text-[9px] sm:text-xs ring-2 ring-[#f4a261]/10 group-hover:ring-[#f4a261]/30 transition-all">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white font-bold text-[9px] sm:text-xs ring-2 ring-emerald-200 group-hover:ring-emerald-400 transition-all">
               {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
             </div>
           </button>
           <button 
             onClick={() => setShowLogoutConfirm(true)}
-            className="p-1 hover:bg-white/5 rounded-lg text-white/20 hover:text-red-400 transition-all"
+            className="p-1 hover:bg-gray-50 rounded-lg text-gray-300 hover:text-red-400 transition-all"
             title="Keluar"
           >
             <LogOut size={14} />
@@ -168,7 +178,7 @@ export default function App() {
 
       {/* Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 z-50 pointer-events-none">
-        <div className="max-w-md mx-auto bg-[#1a1d27]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 flex justify-around items-center shadow-2xl shadow-black/80 pointer-events-auto">
+        <div className="max-w-md mx-auto bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl p-1.5 flex justify-around items-center shadow-2xl shadow-gray-200/80 pointer-events-auto">
           <NavButton active={activeTab === "home"} onClick={() => setActiveTab("home")} icon={<BookOpen size={18} />} label="Home" />
           <NavButton active={activeTab === "feed"} onClick={() => setActiveTab("feed")} icon={<Grid size={18} />} label="Feed" />
           <NavButton active={activeTab === "history"} onClick={() => setActiveTab("history")} icon={<History size={18} />} label="Riwayat" />
@@ -187,7 +197,7 @@ export default function App() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setActiveTab("write")}
-          className="fixed bottom-24 right-6 w-11 h-11 bg-[#f4a261] text-[#0f1117] rounded-full flex items-center justify-center shadow-2xl shadow-[#f4a261]/40 z-40 sm:bottom-28 sm:right-8"
+          className="fixed bottom-24 right-6 w-11 h-11 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-300/60 z-40 sm:bottom-28 sm:right-8"
         >
           <PlusCircle size={22} />
         </motion.button>
@@ -206,6 +216,7 @@ export default function App() {
         confirmLabel="Ya, Keluar"
         confirmVariant="danger"
       />
+      </div>{/* end relative z-10 */}
     </div>
   );
 }
@@ -218,7 +229,7 @@ function NavButton({ active, icon, label, onClick }: any) {
       onClick={onClick}
       className={cn(
         "flex flex-col items-center gap-0.5 py-1 px-2 sm:px-3 rounded-lg transition-all duration-300 flex-1 sm:flex-none",
-        active ? "text-[#f4a261] bg-[#f4a261]/10" : "text-white/30 hover:text-white/60"
+        active ? "text-[#10b981] bg-emerald-100" : "text-gray-400 hover:text-gray-600"
       )}
     >
       <div className="scale-75 sm:scale-90">{icon}</div>
@@ -286,27 +297,28 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
   };
 
   return (
-    <div className="h-screen bg-[#0f1117] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Abstract Background */}
-      <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#f4a261]/5 rounded-full blur-[100px]" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-[#4cc9a0]/5 rounded-full blur-[80px]" />
+    <div className="h-screen bg-linear-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Animated Background Blobs */}
+      <div className="blob-1 absolute top-[-15%] right-[-5%] w-125 h-125 bg-emerald-100 rounded-full blur-3xl opacity-40" />
+      <div className="blob-2 absolute bottom-[-15%] left-[-10%] w-96 h-96 bg-teal-100 rounded-full blur-3xl opacity-50" />
+      <div className="blob-3 absolute top-[30%] left-[40%] w-64 h-64 bg-green-100 rounded-full blur-2xl opacity-30" />
       
       <motion.div 
         layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[300px] bg-[#1a1d27] border border-white/10 rounded-2xl p-5 relative z-10 shadow-2xl"
+        className="w-full max-w-75 bg-white border border-gray-200 rounded-2xl p-5 relative z-10 shadow-xl shadow-emerald-100/60"
       >
         <div className="mb-5 text-center">
-          <h1 className="font-serif text-xl font-bold text-[#f4a261] mb-0.5">Jurnal Self Acceptance</h1>
-          <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase">
+          <h1 className="font-serif text-xl font-bold text-[#10b981] mb-0.5">Jurnal Self Acceptance</h1>
+          <p className="text-gray-500 text-[9px] tracking-[0.2em] uppercase">
             {isRegister ? "Registrasi Akun" : "Self Acceptance Portal SMK"}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1.5">
-            <label className="text-[9px] text-white/40 uppercase tracking-widest ml-1">Nomor Induk Siswa</label>
+            <label className="text-[9px] text-gray-500 uppercase tracking-widest ml-1">Nomor Induk Siswa</label>
             <input 
               value={nis} 
               onChange={e => {
@@ -314,8 +326,8 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
                 if (validationErrors.nis) setValidationErrors({...validationErrors, nis: undefined});
               }}
               className={cn(
-                "w-full bg-[#252836] border rounded-lg px-3 py-2 text-xs outline-none transition-all",
-                validationErrors.nis ? "border-red-500/50 focus:border-red-500" : "border-white/5 focus:border-[#f4a261]/50"
+                "w-full bg-gray-100 border rounded-lg px-3 py-2 text-xs outline-none transition-all",
+                validationErrors.nis ? "border-red-500/50 focus:border-red-500" : "border-gray-200 focus:border-emerald-400"
               )}
               placeholder="Contoh: 2024001"
             />
@@ -324,13 +336,13 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
 
           {isRegister && (
             <div className="space-y-1.5">
-              <label className="text-[9px] text-white/40 uppercase tracking-widest ml-1">Nama Lengkap</label>
+              <label className="text-[9px] text-gray-500 uppercase tracking-widest ml-1">Nama Lengkap</label>
               <input 
                 value={name} 
                 onChange={e => setName(e.target.value)}
                 className={cn(
-                  "w-full bg-[#252836] border rounded-lg px-3 py-2 text-xs outline-none transition-all",
-                  validationErrors.name ? "border-red-500/50 focus:border-red-500" : "border-white/5 focus:border-[#f4a261]/50"
+                  "w-full bg-gray-100 border rounded-lg px-3 py-2 text-xs outline-none transition-all",
+                  validationErrors.name ? "border-red-500/50 focus:border-red-500" : "border-gray-200 focus:border-emerald-400"
                 )}
                 placeholder="Nama sesuai raport"
               />
@@ -339,7 +351,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[9px] text-white/40 uppercase tracking-widest ml-1">Passphrase</label>
+            <label className="text-[9px] text-gray-500 uppercase tracking-widest ml-1">Passphrase</label>
             <input 
               type="password"
               value={password} 
@@ -348,8 +360,8 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
                 if (validationErrors.password) setValidationErrors({...validationErrors, password: undefined});
               }}
               className={cn(
-                "w-full bg-[#252836] border rounded-lg px-3 py-2 text-xs outline-none transition-all",
-                validationErrors.password ? "border-red-500/50 focus:border-red-500" : "border-white/5 focus:border-[#f4a261]/50"
+                "w-full bg-gray-100 border rounded-lg px-3 py-2 text-xs outline-none transition-all",
+                validationErrors.password ? "border-red-500/50 focus:border-red-500" : "border-gray-200 focus:border-emerald-400"
               )}
               placeholder="••••••••"
             />
@@ -370,7 +382,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
 
           <button 
             disabled={submitting}
-            className="w-full bg-[#f4a261] hover:bg-[#f4a261]/90 text-[#0f1117] font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 disabled:opacity-50 text-xs mt-1"
+            className="w-full bg-[#10b981] hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 disabled:opacity-50 text-xs mt-1"
           >
             {submitting ? <Activity size={12} className="animate-spin mx-auto" /> : (isRegister ? "Daftar Akun" : "Masuk ke Sistem")}
           </button>
@@ -379,13 +391,13 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
         <div className="mt-4 text-center">
           <button 
             onClick={() => setIsRegister(!isRegister)}
-            className="text-[10px] text-[#f4a261] uppercase tracking-widest font-bold hover:underline"
+            className="text-[10px] text-[#10b981] uppercase tracking-widest font-bold hover:underline"
           >
             {isRegister ? "Sudah punya akun? Masuk" : "Belum punya akun? Daftar Sekarang"}
           </button>
         </div>
         
-        <p className="text-center text-[10px] text-white/20 mt-8 leading-relaxed">
+        <p className="text-center text-[10px] text-gray-300 mt-8 leading-relaxed">
           Sistem Terenkripsi & Diaudit Secara Real-time.<br/>
           Gunakan kredensial yang diberikan oleh operator sekolah.
         </p>
@@ -413,10 +425,10 @@ function ReactionButton({ type, emoji, count, active, disabled, onClick }: { typ
       className={cn(
         "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] sm:text-[10px] transition-all relative group",
         active 
-          ? "bg-[#f4a261]/20 border-[#f4a261] text-[#f4a261] scale-105" 
+          ? "bg-emerald-50 border-emerald-400 text-emerald-600 scale-105 shadow-sm" 
           : disabled 
-            ? "bg-white/[0.02] border-white/[0.02] text-white/10 opacity-50 cursor-not-allowed"
-            : "bg-white/5 border-white/5 text-white/40 hover:border-white/10 active:scale-95 cursor-pointer"
+            ? "bg-gray-50 border-gray-100 text-gray-300 opacity-60 cursor-not-allowed"
+            : "bg-white border-gray-200 text-gray-500 hover:border-emerald-200 hover:text-emerald-600 active:scale-95 cursor-pointer shadow-sm"
       )}
     >
       <span className={cn("transition-transform", !disabled && !active && "group-hover:scale-120")}>{emoji}</span>
@@ -424,7 +436,7 @@ function ReactionButton({ type, emoji, count, active, disabled, onClick }: { typ
       {active && (
         <motion.div 
           initial={{ scale: 0 }} animate={{ scale: 1 }}
-          className="absolute -top-1 -right-1 w-2 h-2 bg-[#f4a261] rounded-full ring-2 ring-[#1a1d27]"
+          className="absolute -top-1 -right-1 w-2 h-2 bg-[#10b981] rounded-full ring-2 ring-white"
         />
       )}
     </button>
@@ -465,32 +477,32 @@ function FeedPage({ user }: { user: User }) {
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#f4a261]">Feed Publik</h2>
-          <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold mt-1">
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Feed Publik</h2>
+          <p className="text-[10px] text-gray-300 uppercase tracking-[0.2em] font-bold mt-1">
             Inspirasi & Refleksi dari Teman
           </p>
         </div>
-        <div className="relative group max-w-xs w-full">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#f4a261] transition-colors" />
+        <div className="relative group w-full sm:max-w-xs">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#10b981] transition-colors" />
           <input 
             type="text" 
             placeholder="Cari Jurnal/Siswa..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full bg-[#1a1d27] border border-white/5 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-[#f4a261]/40 transition-all font-mono"
+            className="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-mono shadow-sm"
           />
         </div>
       </div>
 
       {loading ? (
-        <div className="py-20 flex flex-col items-center gap-4 text-white/10 uppercase tracking-widest font-bold text-[10px]">
-          <Activity size={24} className="animate-spin text-[#f4a261]" />
+        <div className="py-20 flex flex-col items-center gap-4 text-gray-200 uppercase tracking-widest font-bold text-[10px]">
+          <Activity size={24} className="animate-spin text-[#10b981]" />
           <span>Mencari Inspirasi...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-20 text-center bg-white/2 border border-dashed border-white/5 rounded-2xl">
-          <Zap size={24} className="mx-auto mb-3 text-white/5" />
-          <p className="text-xs text-white/20 uppercase tracking-widest font-bold">Belum ada jurnal publik tersedia.</p>
+        <div className="py-20 text-center bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+          <Zap size={24} className="mx-auto mb-3 text-gray-100" />
+          <p className="text-xs text-gray-300 uppercase tracking-widest font-bold">Belum ada jurnal publik tersedia.</p>
         </div>
       ) : (
         <div className="grid gap-3">
@@ -578,9 +590,9 @@ function StudentDashboard({ user }: { user: User }) {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h2 className="font-serif text-lg sm:text-xl font-bold mb-0.5">Halo, {user.name.split(' ')[0]}!</h2>
-          <p className="text-white/40 text-[10px] text-balance">{getGreeting()}</p>
+          <p className="text-gray-500 text-[10px] text-balance">{getGreeting()}</p>
         </div>
-        <div className="self-start sm:self-center bg-[#1a1d27] border border-white/5 rounded-lg px-2 py-1 text-[8px] text-[#f4a261] font-bold uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
+        <div className="self-start sm:self-center bg-emerald-50 border border-emerald-100 rounded-lg px-2 py-1 text-[8px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
           <Calendar size={9} />
           {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}
         </div>
@@ -588,40 +600,40 @@ function StudentDashboard({ user }: { user: User }) {
 
       {/* Streak Banner / Admin Summary */}
       {user.role === "ADMIN" ? (
-        <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
+        <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-1.5">
-              <ShieldCheck size={14} className="text-[#f4a261]" />
-              <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-bold">Integritas Sistem</span>
+              <ShieldCheck size={14} className="text-[#10b981]" />
+              <span className="text-[9px] text-gray-500 uppercase tracking-[0.2em] font-bold">Integritas Sistem</span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl sm:text-5xl font-serif font-bold text-[#f4a261]">{entries.length}</span>
-              <span className="text-[10px] text-white/30 uppercase tracking-widest font-medium">Total Jurnal Siswa</span>
+              <span className="text-4xl sm:text-5xl font-serif font-bold text-[#10b981]">{entries.length}</span>
+              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Total Jurnal Siswa</span>
             </div>
-            <p className="text-xs text-white/60 mt-3 max-w-sm leading-relaxed">
+            <p className="text-xs text-gray-600 mt-3 max-w-sm leading-relaxed">
               Anda sedang melihat data kumulatif dari seluruh ekosistem siswa untuk periode berjalan.
             </p>
           </div>
-          <div className="absolute top-[-20%] right-[-10%] w-48 sm:w-64 h-48 sm:h-64 bg-[#f4a261]/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-[-20%] right-[-10%] w-48 sm:w-64 h-48 sm:h-64 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none" />
         </div>
       ) : (
         <div className={cn(
           "relative overflow-hidden rounded-2xl p-4 sm:p-6 border transition-all duration-500",
           streak >= 3 
-            ? "bg-[#1e1a14] border-[#f4a261]/20 shadow-[0_0_30px_rgba(244,162,97,0.04)]" 
-            : "bg-[#1a1d27] border-white/5"
+            ? "bg-emerald-50 border-emerald-200 shadow-[0_0_30px_rgba(16,185,129,0.08)]" 
+            : "bg-white border-gray-100 shadow-sm"
         )}>
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1.5">
-                <Zap size={14} className={cn(streak >= 3 ? "text-[#f4a261]" : "text-white/20")} />
-                <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-bold">Current Streak</span>
+                <Zap size={14} className={cn(streak >= 3 ? "text-[#10b981]" : "text-gray-300")} />
+                <span className="text-[9px] text-gray-500 uppercase tracking-[0.2em] font-bold">Current Streak</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl sm:text-5xl font-serif font-bold text-[#f4a261]">{streak}</span>
-                <span className="text-[10px] text-white/30 uppercase tracking-widest font-medium">Hari Berturut-turut</span>
+                <span className="text-4xl sm:text-5xl font-serif font-bold text-[#10b981]">{streak}</span>
+                <span className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Hari Berturut-turut</span>
               </div>
-              <p className="text-xs text-white/60 mt-3 max-w-sm leading-relaxed">
+              <p className="text-xs text-gray-600 mt-3 max-w-sm leading-relaxed">
                 {streak === 0 ? "Mulai perjalanan harianmu hari ini!" : 
                  streak < 3 ? "Langkah pertama selalu yang terpenting." :
                  streak < 7 ? "Kebiasaan baru sedang terbentuk!" : "Luar biasa! Konsistensimu nyata."}
@@ -631,7 +643,7 @@ function StudentDashboard({ user }: { user: User }) {
               {streak >= 7 ? "🏆" : streak >= 3 ? "🌟" : "📓"}
             </div>
           </div>
-          <div className="absolute top-[-20%] right-[-10%] w-48 sm:w-64 h-48 sm:h-64 bg-[#f4a261]/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-[-20%] right-[-10%] w-48 sm:w-64 h-48 sm:h-64 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none" />
         </div>
       )}
 
@@ -645,13 +657,13 @@ function StudentDashboard({ user }: { user: User }) {
       {/* Recent Entries */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-bold">Jurnal Terbaru</h3>
+          <h3 className="text-gray-400 text-[10px] uppercase tracking-[0.2em] font-bold">Jurnal Terbaru</h3>
         </div>
         <div className="grid gap-3">
           {loading ? (
-            Array(3).fill(0).map((_, i) => <div key={i} className="h-20 bg-white/5 rounded-2xl animate-pulse" />)
+            Array(3).fill(0).map((_, i) => <div key={i} className="h-20 bg-gray-50 rounded-2xl animate-pulse" />)
           ) : entries.length === 0 ? (
-            <div className="py-12 text-center border border-dashed border-white/10 rounded-3xl text-white/20 flex flex-col items-center gap-3">
+            <div className="py-12 text-center border border-dashed border-gray-200 rounded-3xl text-gray-400 flex flex-col items-center gap-3">
               <BookOpen size={32} className="opacity-20" />
               <p className="text-xs uppercase tracking-widest">Belum ada jurnal yang tercatat</p>
             </div>
@@ -673,30 +685,30 @@ function EntryCard({ entry, onUpdate }: { entry: Entry, onUpdate?: () => void })
     <>
       <div 
         onClick={() => setOpen(true)}
-        className="bg-[#1a1d27] border border-white/5 rounded-xl p-3 sm:p-4 flex items-center gap-3 hover:border-[#f4a261]/20 group transition-all duration-300 cursor-pointer active:scale-[0.98]"
+        className="bg-white border border-gray-100 rounded-xl p-3 sm:p-4 flex items-center gap-3 hover:border-emerald-200 hover:shadow-md shadow-sm group transition-all duration-300 cursor-pointer active:scale-[0.98]"
       >
-        <div className="text-xl w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[#13161f] flex items-center justify-center border border-white/5 group-hover:border-[#f4a261]/30 transition-all">
+        <div className="text-xl w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:border-emerald-300 transition-all">
           {entry.mood}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-xs sm:text-sm truncate group-hover:text-[#f4a261] transition-colors">{entry.title}</h4>
+          <h4 className="font-medium text-xs sm:text-sm truncate group-hover:text-emerald-600 transition-colors">{entry.title}</h4>
           <div className="flex items-center gap-2 mt-0.5">
             {entry.user && (
-              <span className="text-[9px] font-bold text-[#f4a261] uppercase tracking-tighter bg-[#f4a261]/5 px-1 rounded">{entry.user.name}</span>
+              <span className="text-[9px] font-bold text-[#10b981] uppercase tracking-tighter bg-emerald-50/60 px-1 rounded">{entry.user.name}</span>
             )}
-            <div className="flex items-center gap-2 text-[8px] text-white/20 font-mono">
-              <span className="flex items-center gap-0.5 bg-white/5 px-1.5 py-0.5 rounded border border-white/5"><Eye size={8} className="text-[#f4a261]" /> {entry.viewCount || 0}</span>
-              <span className="flex items-center gap-0.5 bg-white/5 px-1.5 py-0.5 rounded border border-white/5"><MessageCircle size={8} className="text-[#4cc9a0]" /> {entry._count?.comments || 0}</span>
-              <span className="flex items-center gap-0.5 bg-white/5 px-1.5 py-0.5 rounded border border-white/5"><Smile size={8} className="text-pink-400" /> {entry.reactions?.length || 0}</span>
+            <div className="flex items-center gap-2 text-[8px] text-gray-300 font-mono">
+              <span className="flex items-center gap-0.5 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100"><Eye size={8} className="text-[#10b981]" /> {entry.viewCount || 0}</span>
+              <span className="flex items-center gap-0.5 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100"><MessageCircle size={8} className="text-[#4cc9a0]" /> {entry._count?.comments || 0}</span>
+              <span className="flex items-center gap-0.5 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100"><Smile size={8} className="text-pink-400" /> {entry.reactions?.length || 0}</span>
             </div>
           </div>
-          <p className="text-[10px] text-white/30 line-clamp-1 mt-0.5">{entry.body}</p>
+          <p className="text-[10px] text-gray-400 line-clamp-1 mt-0.5">{entry.body}</p>
         </div>
         <div className="text-right">
-          <p className="text-[8px] sm:text-[9px] text-white/20 uppercase tracking-tighter font-mono">
+          <p className="text-[8px] sm:text-[9px] text-gray-300 uppercase tracking-tighter font-mono">
             {new Date(entry.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
           </p>
-          <ChevronRight size={12} className="ml-auto mt-1 text-white/10 group-hover:text-[#f4a261]/50 group-hover:translate-x-1 transition-all" />
+          <ChevronRight size={12} className="ml-auto mt-1 text-gray-200 group-hover:text-emerald-600/50 group-hover:translate-x-1 transition-all" />
         </div>
       </div>
 
@@ -831,26 +843,26 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-6">
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div 
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-[#1a1d27] rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-t sm:border border-white/10"
+            className="relative w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-t sm:border border-gray-200 shadow-2xl shadow-gray-300/30"
           >
-            <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-3 sm:hidden" />
+            <div className="w-12 h-1 bg-gray-100 rounded-full mx-auto mb-3 sm:hidden" />
             
-            <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
+            <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
               <div>
-                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#f4a261]">
+                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#10b981]">
                   {isEditing ? "Edit Jurnal" : "Detail Jurnal"}
                 </h2>
                 {entry.user && !isEditing && (
-                  <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1 font-bold">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1 font-bold">
                     Oleh: {entry.user.name} · {entry.user.nis}
                   </p>
                 )}
@@ -861,7 +873,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                     {canEdit && (
                       <button 
                         onClick={() => setIsEditing(true)} 
-                        className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all text-white/60 hover:text-[#f4a261]"
+                        className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all text-gray-600 hover:text-emerald-600"
                         title="Edit"
                       >
                         <Pencil size={16} />
@@ -892,7 +904,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                             }
                           } as any);
                         }}
-                        className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all text-white/40 hover:text-red-400"
+                        className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all text-gray-500 hover:text-red-400"
                         title="Hapus"
                       >
                         <Trash2 size={16} />
@@ -902,7 +914,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                 )}
                 <button 
                   onClick={onClose} 
-                  className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all text-white/40"
+                  className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all text-gray-500"
                   title="Tutup"
                 >
                   <X size={16} />
@@ -915,7 +927,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                 <div className="space-y-5">
                   <div className="space-y-4">
                     <div>
-                      <label className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold mb-2 block">Bagaimana Mood Kamu?</label>
+                      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-2 block">Bagaimana Mood Kamu?</label>
                       <div className="grid grid-cols-6 gap-1.5">
                         {MOODS.map(m => (
                           <button 
@@ -924,8 +936,8 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                             className={cn(
                               "p-1.5 sm:p-2 rounded-lg border transition-all duration-300 flex flex-col items-center gap-1 group",
                               editedMood.label === m.label 
-                                ? "bg-[#f4a261]/10 border-[#f4a261] text-[#f4a261]" 
-                                : "bg-[#13161f] border-white/5 text-white/40 hover:border-white/10"
+                                ? "bg-emerald-50 border-emerald-400 text-emerald-600" 
+                                : "bg-white border-gray-200 text-gray-500 hover:border-emerald-200"
                             )}
                           >
                             <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform">{m.emoji}</span>
@@ -936,7 +948,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                     </div>
 
                     <div>
-                      <label className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold mb-1.5 block">Judul Jurnal</label>
+                      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-1.5 block">Judul Jurnal</label>
                       <input 
                         value={editedTitle} 
                         onChange={e => {
@@ -944,15 +956,15 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                           if (errors.title) setErrors({...errors, title: undefined});
                         }}
                         className={cn(
-                          "w-full bg-[#13161f] border rounded-lg px-3 py-2 outline-none transition-all text-xs sm:text-sm",
-                          errors.title ? "border-red-500/30 focus:border-red-500/50" : "border-white/5 focus:border-[#f4a261]/40"
+                          "w-full bg-gray-50 border rounded-lg px-3 py-2 outline-none transition-all text-xs sm:text-sm",
+                          errors.title ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
                         )}
                       />
                       {errors.title && <p className="text-[8px] text-red-500/80 mt-1 ml-1">{errors.title}</p>}
                     </div>
 
                     <div>
-                      <label className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold mb-1.5 block">Cerita Harimu</label>
+                      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-1.5 block">Cerita Harimu</label>
                       <textarea 
                         value={editedBody} 
                         onChange={e => {
@@ -960,8 +972,8 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                           if (errors.body) setErrors({...errors, body: undefined});
                         }}
                         className={cn(
-                          "w-full bg-[#13161f] border rounded-lg p-3 min-h-[120px] sm:min-h-[150px] outline-none text-white/80 leading-relaxed transition-all resize-none text-xs sm:text-sm",
-                          errors.body ? "border-red-500/30 focus:border-red-500/50" : "border-white/5 focus:border-[#f4a261]/40"
+                          "w-full bg-gray-50 border rounded-lg p-3 min-h-30 sm:min-h-37.5 outline-none text-gray-700 leading-relaxed transition-all resize-none text-xs sm:text-sm",
+                          errors.body ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
                         )}
                       />
                       {errors.body && <p className="text-[8px] text-red-500/80 mt-1 ml-1">{errors.body}</p>}
@@ -969,7 +981,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                   </div>
 
                   <div className="space-y-3 pt-2">
-                     <h5 className="text-[9px] sm:text-[10px] text-[#f4a261] font-bold uppercase tracking-widest flex items-center gap-2">
+                     <h5 className="text-[9px] sm:text-[10px] text-[#10b981] font-bold uppercase tracking-widest flex items-center gap-2">
                        <Smile size={12} /> Edit Refleksi
                      </h5>
                      <div className="grid gap-3">
@@ -979,17 +991,17 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                      </div>
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <div className="flex gap-3 pt-4 border-t border-gray-100">
                     <button 
                       onClick={() => setIsEditing(false)}
-                      className="flex-1 py-3 px-4 rounded-xl border border-white/10 text-white/60 font-bold text-xs uppercase tracking-widest hover:bg-white/5 transition-all"
+                      className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-all"
                     >
                       Batal
                     </button>
                     <button 
                       onClick={handleUpdate}
                       disabled={saving}
-                      className="flex-2 py-3 px-4 rounded-xl bg-[#f4a261] text-[#0f1117] font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="flex-2 py-3 px-4 rounded-xl bg-[#10b981] text-white font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {saving ? <Activity size={14} className="animate-spin" /> : <Save size={14} />}
                       Simpan Perubahan
@@ -998,17 +1010,17 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                    <div className="text-2xl sm:text-3xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-[#13161f] rounded-lg border border-white/5">
+                  <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <div className="text-2xl sm:text-3xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100">
                       {entry.mood}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-serif text-base sm:text-lg font-bold truncate">{entry.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-[9px] sm:text-[10px] text-white/30 uppercase tracking-widest font-medium">
+                        <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest font-medium">
                           {new Date(entry.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </p>
-                        <span className="flex items-center gap-1 text-[9px] text-[#f4a261] font-mono">
+                        <span className="flex items-center gap-1 text-[9px] text-[#10b981] font-mono">
                           <Eye size={10} /> {viewCount}
                         </span>
                       </div>
@@ -1036,13 +1048,13 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                      })}
                   </div>
 
-                  <div className="text-white/80 leading-relaxed text-sm whitespace-pre-wrap py-2">
+                  <div className="text-gray-700 leading-relaxed text-sm whitespace-pre-wrap py-2">
                     {entry.body}
                   </div>
 
                   {(entry.ref1 || entry.ref2 || entry.ref3) && (
-                    <div className="space-y-4 pt-4 border-t border-white/5">
-                      <h5 className="text-[9px] sm:text-[10px] text-[#f4a261] font-bold uppercase tracking-widest flex items-center gap-2">
+                    <div className="space-y-4 pt-4 border-t border-gray-100">
+                      <h5 className="text-[9px] sm:text-[10px] text-[#10b981] font-bold uppercase tracking-widest flex items-center gap-2">
                         <Smile size={12} /> Refleksi Diri
                       </h5>
                       <div className="grid sm:grid-cols-3 gap-3">
@@ -1082,9 +1094,9 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
 
 function RefBox({ label, text }: { label: string, text: string }) {
   return (
-    <div className="bg-[#13161f] border border-white/5 rounded-xl p-3 sm:p-4 h-full">
-      <div className="text-[7px] sm:text-[8px] text-white/30 uppercase tracking-widest font-bold mb-1.5 sm:mb-2">{label}</div>
-      <p className="text-[11px] sm:text-xs text-white/70 leading-relaxed italic">{text}</p>
+    <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 sm:p-4 h-full">
+      <div className="text-[7px] sm:text-[8px] text-gray-400 uppercase tracking-widest font-bold mb-1.5 sm:mb-2">{label}</div>
+      <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed italic">{text}</p>
     </div>
   );
 }
@@ -1155,38 +1167,38 @@ function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, l
   };
 
   return (
-    <div className="mt-8 pt-8 border-t border-white/5">
-      <h5 className="text-[9px] sm:text-[10px] text-[#f4a261] font-bold uppercase tracking-widest flex items-center gap-2 mb-4">
+    <div className="mt-8 pt-8 border-t border-gray-100">
+      <h5 className="text-[9px] sm:text-[10px] text-[#10b981] font-bold uppercase tracking-widest flex items-center gap-2 mb-4">
         <MessageCircle size={12} /> Komentar ({comments.length})
       </h5>
 
       <div className="space-y-4 mb-4">
         {loading && comments.length === 0 ? (
           <div className="flex justify-center p-3">
-            <Activity size={14} className="animate-spin text-white/20" />
+            <Activity size={14} className="animate-spin text-gray-300" />
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-[9px] text-white/20 uppercase tracking-widest text-center py-3 bg-white/2 rounded-lg">Belum ada komentar.</p>
+          <p className="text-[9px] text-gray-400 uppercase tracking-widest text-center py-3 bg-gray-50 rounded-lg border border-gray-100">Belum ada komentar.</p>
         ) : (
           comments.map(c => (
             <div key={c.id} className="flex gap-2.5 group">
-              <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-[9px] font-bold text-white/20 uppercase">
+              <div className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center text-[9px] font-bold text-gray-300 uppercase">
                 {c.user.name[0]}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-bold text-white/40">{c.user.name}</span>
-                    {c.user.role === "ADMIN" && <span className="text-[7px] bg-[#f4a261]/20 text-[#f4a261] px-1 rounded uppercase font-bold tracking-tighter">Admin</span>}
+                    <span className="text-[9px] font-bold text-gray-500">{c.user.name}</span>
+                    {c.user.role === "ADMIN" && <span className="text-[7px] bg-emerald-100 text-emerald-600 px-1 rounded uppercase font-bold tracking-tighter">Admin</span>}
                   </div>
-                  <span className="text-[7px] text-white/10 uppercase font-mono">{new Date(c.createdAt).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
+                  <span className="text-[7px] text-gray-200 uppercase font-mono">{new Date(c.createdAt).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
                 </div>
-                <div className="bg-[#13161f] border border-white/5 p-2 rounded-lg rounded-tl-none relative group">
-                  <p className="text-[11px] text-white/70 leading-relaxed">{c.body}</p>
+                <div className="bg-gray-50 border border-gray-100 p-2 rounded-lg rounded-tl-none relative group">
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{c.body}</p>
                   {(currentUser.id === c.userId || currentUser.role === "ADMIN") && (
                     <button 
                       onClick={() => handleDeleteComment(c.id)}
-                      className="absolute top-1.5 right-1.5 p-1 hover:bg-red-500/10 text-white/5 hover:text-red-500 rounded transition-all opacity-0 group-hover:opacity-100"
+                      className="absolute top-1.5 right-1.5 p-1 hover:bg-red-500/10 text-gray-100 hover:text-red-500 rounded transition-all opacity-0 group-hover:opacity-100"
                     >
                       <Trash2 size={10} />
                     </button>
@@ -1203,11 +1215,11 @@ function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, l
           value={newComment}
           onChange={e => setNewComment(e.target.value)}
           placeholder="Tinggalkan pesan penyemangat..."
-          className="flex-1 bg-[#13161f] border border-white/5 rounded-xl px-3 py-2 text-xs outline-none focus:border-[#f4a261]/40 transition-all"
+          className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-xs outline-none focus:border-emerald-400 transition-all"
         />
         <button 
           disabled={submitting || !newComment.trim()}
-          className="w-10 h-10 bg-[#f4a261] flex items-center justify-center rounded-xl text-[#0f1117] disabled:opacity-30 transition-all active:scale-95"
+          className="w-10 h-10 bg-[#10b981] flex items-center justify-center rounded-xl text-white disabled:opacity-30 transition-all active:scale-95"
         >
           {submitting ? <Activity size={14} className="animate-spin" /> : <Send size={14} />}
         </button>
@@ -1286,12 +1298,12 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 sm:space-y-6 pb-8">
       <header>
         <h2 className="font-serif text-lg sm:text-xl font-bold mb-0.5">Tulis Jurnal</h2>
-        <p className="text-white/40 text-[10px] sm:text-xs">Abadikan momen dan refleksimu hari ini.</p>
+        <p className="text-gray-500 text-[10px] sm:text-xs">Abadikan momen dan refleksimu hari ini.</p>
       </header>
 
       <section className="space-y-4 sm:space-y-6">
         <div>
-          <label className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold mb-3 block">Bagaimana Mood Kamu?</label>
+          <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-3 block">Bagaimana Mood Kamu?</label>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {MOODS.map(m => (
               <button 
@@ -1300,15 +1312,15 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
                 className={cn(
                   "p-2 sm:p-2.5 rounded-xl border transition-all duration-300 flex flex-col items-center gap-0.5 group relative",
                   mood.label === m.label 
-                    ? "bg-[#f4a261]/10 border-[#f4a261] text-[#f4a261]" 
-                    : "bg-[#1a1d27] border-white/5 text-white/40 hover:border-white/10"
+                    ? "bg-emerald-50 border-emerald-400 text-emerald-600 shadow-sm" 
+                    : "bg-white border-gray-200 text-gray-500 hover:border-emerald-200 shadow-sm"
                 )}
               >
                 <span className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">{m.emoji}</span>
                 <span className="text-[7px] sm:text-[8px] uppercase tracking-tighter text-center leading-none">{m.label}</span>
                 {mood.label === m.label && (
-                  <motion.div layoutId="mood-active" className="absolute -top-1 -right-1 w-3 h-3 bg-[#f4a261] rounded-full flex items-center justify-center border-2 border-[#1a1d27]">
-                    <Check size={6} className="text-[#0f1117] bold" />
+                  <motion.div layoutId="mood-active" className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <Check size={6} className="text-white bold" />
                   </motion.div>
                 )}
               </button>
@@ -1318,7 +1330,7 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
 
         <div className="space-y-3 sm:space-y-4">
           <div className="space-y-1">
-            <label className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold ml-1 block">Judul Jurnal</label>
+            <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold ml-1 block">Judul Jurnal</label>
             <input 
               placeholder="Berikan judul..."
               value={title} 
@@ -1327,15 +1339,15 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
                 if (errors.title) setErrors({...errors, title: undefined});
               }}
               className={cn(
-                "w-full bg-[#1a1d27] border rounded-xl px-4 py-2.5 outline-none transition-all font-medium text-xs sm:text-sm",
-                errors.title ? "border-red-500/30 focus:border-red-500/50" : "border-white/5 focus:border-[#f4a261]/40"
+                "w-full bg-white border rounded-xl px-4 py-2.5 outline-none transition-all font-medium text-xs sm:text-sm",
+                errors.title ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
               )}
             />
             {errors.title && <p className="text-[9px] text-red-500/80 mt-1 ml-1.5 font-medium">{errors.title}</p>}
           </div>
 
           <div className="space-y-1">
-            <label className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold ml-1 block">Cerita Harimu</label>
+            <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold ml-1 block">Cerita Harimu</label>
             <textarea 
               placeholder="Tuliskan detail..."
               value={body} 
@@ -1344,15 +1356,15 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
                 if (errors.body) setErrors({...errors, body: undefined});
               }}
               className={cn(
-                "w-full bg-[#1a1d27] border rounded-xl p-4 min-h-[120px] sm:min-h-[160px] outline-none text-white/80 leading-relaxed transition-all resize-none text-xs sm:text-sm",
-                errors.body ? "border-red-500/30 focus:border-red-500/50" : "border-white/5 focus:border-[#f4a261]/40"
+                "w-full bg-white border rounded-xl p-4 min-h-30 sm:min-h-40 outline-none text-gray-700 leading-relaxed transition-all resize-none text-xs sm:text-sm",
+                errors.body ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
               )}
             />
             {errors.body && <p className="text-[9px] text-red-500/80 mt-1 ml-1.5 font-medium">{errors.body}</p>}
           </div>
 
-          <div className="pt-3 border-t border-white/5">
-            <h4 className="text-[11px] sm:text-xs font-serif font-bold text-[#f4a261] mb-3 flex items-center gap-2 uppercase tracking-widest">
+          <div className="pt-3 border-t border-gray-100">
+            <h4 className="text-[11px] sm:text-xs font-serif font-bold text-[#10b981] mb-3 flex items-center gap-2 uppercase tracking-widest">
               <Smile size={14} /> Refleksi Terpandu
             </h4>
             <div className="grid sm:grid-cols-3 gap-3">
@@ -1365,7 +1377,7 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
           <button 
             disabled={saving}
             onClick={handleSave}
-            className="w-full bg-[#f4a261] hover:bg-[#f4a261]/90 text-[#0f1117] font-bold py-3.5 rounded-xl shadow-xl shadow-[#f4a261]/5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none mt-2 flex items-center justify-center gap-2 text-xs"
+            className="w-full bg-[#10b981] hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-sm shadow-emerald-200/60 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none mt-2 flex items-center justify-center gap-2 text-xs"
           >
             {saving ? <Activity size={14} className="animate-spin" /> : <Save size={14} />}
             {saving ? "Menyimpan Jurnal..." : "Simpan Refleksi Harian"}
@@ -1387,12 +1399,12 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
 
 function RefInput({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
   return (
-    <div className="bg-[#13161f] border border-white/5 rounded-xl p-3 group focus-within:border-[#f4a261]/30 transition-all">
-      <label className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-widest font-bold mb-1.5 block leading-none">{label}</label>
+    <div className="bg-white border border-gray-200 rounded-xl p-3 group focus-within:border-emerald-300 transition-all shadow-sm">
+      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-widest font-bold mb-1.5 block leading-none">{label}</label>
       <textarea 
         value={value} onChange={e => onChange(e.target.value)}
         placeholder="Tulis refleksi..."
-        className="w-full bg-transparent border-none outline-none text-[11px] sm:text-xs text-white/70 h-14 sm:h-16 resize-none leading-relaxed"
+        className="w-full bg-transparent border-none outline-none text-[11px] sm:text-xs text-gray-600 h-14 sm:h-16 resize-none leading-relaxed"
       />
     </div>
   );
@@ -1450,21 +1462,21 @@ function HistoryPage({ user }: { user: User }) {
         <h2 className="font-serif text-xl sm:text-2xl font-bold mb-0.5">
           {user.role === "ADMIN" ? "Monitoring Riwayat Siswa" : "Riwayat Jurnal"}
         </h2>
-        <p className="text-white/40 text-xs text-balance">
+        <p className="text-gray-500 text-xs text-balance">
           {user.role === "ADMIN" ? "Arsip lengkap seluruh refleksi siswa di ekosistem." : "Arsip lengkap refleksi dirimu."}
         </p>
       </header>
 
-      <div className="space-y-3 sticky top-[48px] sm:top-[56px] bg-[#0f1117]/95 backdrop-blur-md py-3 z-40 border-b border-white/5">
+      <div className="space-y-3 sticky top-12 sm:top-14 bg-white/95 backdrop-blur-md py-3 z-40 border-b border-gray-100">
         {/* Search Input */}
         <div className="relative">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
           <input 
             type="text"
             placeholder="Cari kata kunci..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-9 pr-3 text-xs outline-none focus:border-[#f4a261]/40 transition-all font-medium"
+            className="w-full bg-white border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-medium shadow-sm"
           />
         </div>
 
@@ -1474,7 +1486,7 @@ function HistoryPage({ user }: { user: User }) {
             onClick={() => setMoodFilter("all")}
             className={cn(
               "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border shrink-0", 
-              moodFilter === "all" ? "bg-[#f4a261] text-[#0f1117] border-[#f4a261]" : "bg-white/5 text-white/40 border-transparent hover:border-white/10"
+              moodFilter === "all" ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" : "bg-white text-gray-500 border-gray-200 hover:border-emerald-200 hover:text-emerald-600"
             )}
           >
             Semua
@@ -1485,7 +1497,7 @@ function HistoryPage({ user }: { user: User }) {
               onClick={() => setMoodFilter(m.emoji)}
               className={cn(
                 "px-2.5 py-1.5 rounded-lg text-xs sm:text-sm transition-all border shrink-0", 
-                moodFilter === m.emoji ? "bg-white/10 border-[#f4a261] text-[#f4a261]" : "bg-white/5 text-white/40 border-transparent hover:border-white/10"
+                moodFilter === m.emoji ? "bg-emerald-50 border-emerald-400 text-emerald-600" : "bg-white text-gray-500 border-gray-200 hover:border-emerald-200"
               )}
             >
               {m.emoji}
@@ -1506,7 +1518,7 @@ function HistoryPage({ user }: { user: User }) {
               onClick={() => setDateFilter(f.id)}
               className={cn(
                 "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border whitespace-nowrap", 
-                dateFilter === f.id ? "bg-white/20 text-[#f4a261] border-[#f4a261]/30" : "bg-white/5 text-white/30 border-transparent hover:border-white/10"
+                dateFilter === f.id ? "bg-emerald-50 text-emerald-600 border-emerald-300" : "bg-white text-gray-400 border-gray-200 hover:border-emerald-200"
               )}
             >
               {f.label}
@@ -1517,11 +1529,11 @@ function HistoryPage({ user }: { user: User }) {
 
       <div className="grid gap-4">
         {loading ? (
-           Array(5).fill(0).map((_, i) => <div key={i} className="h-24 bg-white/5 rounded-2xl animate-pulse" />)
+           Array(5).fill(0).map((_, i) => <div key={i} className="h-24 bg-gray-50 rounded-2xl animate-pulse" />)
         ) : filteredEntries.length === 0 ? (
-          <div className="py-20 text-center border border-dashed border-white/5 rounded-3xl">
-            <BookOpen size={30} className="mx-auto mb-3 text-white/10" />
-            <p className="text-white/20 uppercase tracking-[0.2em] text-[10px] font-bold">Tidak ada catatan ditemukan</p>
+          <div className="py-20 text-center border border-dashed border-gray-200 rounded-3xl">
+            <BookOpen size={30} className="mx-auto mb-3 text-gray-200" />
+            <p className="text-gray-300 uppercase tracking-[0.2em] text-[10px] font-bold">Tidak ada catatan ditemukan</p>
           </div>
         ) : (
           filteredEntries.map(e => <EntryCard key={e.id} entry={e} onUpdate={fetchHistory} />)
@@ -1557,7 +1569,7 @@ function KeywordMoodChart({ entries }: { entries: Entry[] }) {
   })).sort((a, b) => b.frequency - a.frequency);
 
   if (correlationData.length === 0) return (
-    <div className="h-40 flex items-center justify-center text-white/10 uppercase tracking-widest text-[10px]">
+    <div className="h-40 flex items-center justify-center text-gray-200 uppercase tracking-widest text-[10px]">
       Belum ada data korelasi yang cukup
     </div>
   );
@@ -1568,21 +1580,21 @@ function KeywordMoodChart({ entries }: { entries: Entry[] }) {
     <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={correlationData} layout="vertical" margin={{ left: isMobile ? 5 : 20, right: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={true} vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" horizontal={true} vertical={false} />
           <XAxis type="number" domain={[0, 5]} hide />
-          <YAxis dataKey="name" type="category" stroke="rgba(255,255,255,0.4)" fontSize={isMobile ? 9 : 11} tickLine={false} axisLine={false} width={isMobile ? 60 : 80} />
+          <YAxis dataKey="name" type="category" stroke="#9ca3af" fontSize={isMobile ? 9 : 11} tickLine={false} axisLine={false} width={isMobile ? 60 : 80} />
           <Tooltip 
-            cursor={{ fill: "rgba(255,255,255,0.02)" }}
+            cursor={{ fill: "rgba(0,0,0,0.02)" }}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const data = payload[0].payload;
                 return (
-                  <div className="bg-[#13161f] border border-white/10 rounded-xl p-3 shadow-2xl">
-                    <p className="text-xs font-bold text-[#f4a261] uppercase tracking-widest mb-1">{data.name}</p>
-                    <p className="text-[10px] text-white/40 mb-2">Muncul {data.frequency} kali</p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 shadow-2xl">
+                    <p className="text-xs font-bold text-[#10b981] uppercase tracking-widest mb-1">{data.name}</p>
+                    <p className="text-[10px] text-gray-500 mb-2">Muncul {data.frequency} kali</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-white/80">Skor Mood:</span>
-                      <span className="text-sm font-bold text-[#f4a261]">{data.avgMood}</span>
+                      <span className="text-xs text-gray-700">Skor Mood:</span>
+                      <span className="text-sm font-bold text-[#10b981]">{data.avgMood}</span>
                       <span className="text-lg">{data.emojis}</span>
                     </div>
                   </div>
@@ -1595,7 +1607,7 @@ function KeywordMoodChart({ entries }: { entries: Entry[] }) {
             {correlationData.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={entry.avgMood >= 4 ? "#4cc9a0" : entry.avgMood >= 3 ? "#f4a261" : "#e24b4a"} 
+                fill={entry.avgMood >= 4 ? "#4cc9a0" : entry.avgMood >= 3 ? "#10b981" : "#e24b4a"} 
                 fillOpacity={0.6 + (entry.frequency / Math.max(...correlationData.map(d => d.frequency))) * 0.4}
               />
             ))}
@@ -1669,7 +1681,7 @@ function GrafikPage({ user }: { user: User }) {
 
   const correlationData = getKeywordData();
 
-  if (loading) return <div className="h-64 flex items-center justify-center text-[#f4a261]"><Activity className="animate-spin" /></div>;
+  if (loading) return <div className="h-64 flex items-center justify-center text-emerald-600"><Activity className="animate-spin" /></div>;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
@@ -1677,34 +1689,34 @@ function GrafikPage({ user }: { user: User }) {
         <h2 className="font-serif text-xl sm:text-2xl font-bold mb-1">
           {user.role === "ADMIN" ? "Analisis Sentiment Siswa" : "Analisis Mood"}
         </h2>
-        <p className="text-white/40 text-[10px] sm:text-xs">
+        <p className="text-gray-500 text-[10px] sm:text-xs">
           {user.role === "ADMIN" ? "Visualisasi pola emosional seluruh siswa dalam sistem." : "Visualisasi pola emosional harimu."}
         </p>
       </header>
 
       <div className="grid gap-4">
         {/* Keyword Correlation Chart */}
-        <section className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 sm:p-6 shadow-xl">
+        <section className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[10px] uppercase tracking-widest font-bold text-white/30">Korelasi Mood</h3>
-            <span className="text-[8px] text-[#f4a261] bg-[#f4a261]/10 px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">AI Node</span>
+            <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Korelasi Mood</h3>
+            <span className="text-[8px] text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">AI Node</span>
           </div>
           <KeywordMoodChart entries={entries} />
         </section>
 
         {/* Frequency Line Chart */}
-        <section className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 sm:p-6 shadow-xl">
-          <h3 className="text-[10px] uppercase tracking-widest font-bold text-white/30 mb-4">Aktivitas (7 Hari)</h3>
+        <section className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 shadow-sm">
+          <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">Aktivitas (7 Hari)</h3>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={frequencyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" fontSize={9} axisLine={false} tickLine={false} dy={5} />
-                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={9} axisLine={false} tickLine={false} tickCount={4} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
+                <XAxis dataKey="date" stroke="#9ca3af" fontSize={9} axisLine={false} tickLine={false} dy={5} />
+                <YAxis stroke="#9ca3af" fontSize={9} axisLine={false} tickLine={false} tickCount={4} allowDecimals={false} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#13161f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '10px' }}
+                  contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '10px', color: '#374151' }}
                 />
-                <Line type="monotone" dataKey="count" stroke="#f4a261" strokeWidth={2} dot={{ r: 3, fill: '#f4a261', strokeWidth: 0 }} />
+                <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} dot={{ r: 3, fill: '#10b981', strokeWidth: 0 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -1712,8 +1724,8 @@ function GrafikPage({ user }: { user: User }) {
 
         {/* Mood Distribution Donut */}
         <div className="grid md:grid-cols-2 gap-6">
-          <section className="bg-[#1a1d27] border border-white/5 rounded-3xl p-6 shadow-xl flex flex-col justify-center">
-            <h3 className="text-xs uppercase tracking-widest font-bold text-white/30 mb-6">Distribusi Mood</h3>
+          <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col justify-center">
+            <h3 className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-6">Distribusi Mood</h3>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -1729,16 +1741,16 @@ function GrafikPage({ user }: { user: User }) {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#13161f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                    labelStyle={{ color: 'white' }}
+                    contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px' }}
+                    labelStyle={{ color: '#374151' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </section>
 
-          <section className="bg-[#1a1d27] border border-white/5 rounded-3xl p-6 shadow-xl">
-             <h3 className="text-xs uppercase tracking-widest font-bold text-white/30 mb-6">Ringkasan Mood</h3>
+          <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+             <h3 className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-6">Ringkasan Mood</h3>
              <div className="space-y-4">
                 {MOODS.map(m => {
                   const count = entries.filter(e => e.mood === m.emoji).length;
@@ -1747,11 +1759,11 @@ function GrafikPage({ user }: { user: User }) {
                     <div key={m.label} className="flex items-center gap-4">
                       <span className="text-2xl">{m.emoji}</span>
                       <div className="flex-1">
-                        <div className="flex justify-between text-[10px] uppercase tracking-widest text-white/40 mb-1">
+                        <div className="flex justify-between text-[10px] uppercase tracking-widest text-gray-500 mb-1">
                           <span>{m.label}</span>
                           <span>{count} Jurnal</span>
                         </div>
-                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${percent}%` }}
@@ -1760,7 +1772,7 @@ function GrafikPage({ user }: { user: User }) {
                           />
                         </div>
                       </div>
-                      <span className="text-xs font-mono font-bold text-white/60">{percent}%</span>
+                      <span className="text-xs font-mono font-bold text-gray-600">{percent}%</span>
                     </div>
                   )
                 })}
@@ -1820,67 +1832,67 @@ function ProfilePage({ user, onUpdate }: { user: User, onUpdate: (u: User) => vo
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <header>
-        <h2 className="font-serif text-xl sm:text-2xl font-bold mb-1 text-[#f4a261]">Pengaturan Profil</h2>
-        <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-widest font-bold">Kelola Identitas & Keamanan Akun</p>
+        <h2 className="font-serif text-xl sm:text-2xl font-bold mb-1 text-[#10b981]">Pengaturan Profil</h2>
+        <p className="text-gray-500 text-[10px] sm:text-xs uppercase tracking-widest font-bold">Kelola Identitas & Keamanan Akun</p>
       </header>
 
-      <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-6 shadow-xl space-y-6">
+      <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-6">
         <form onSubmit={handleUpdateProfile} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold block">Informasi Dasar</label>
+            <label className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold block">Informasi Dasar</label>
             <div className="grid gap-4">
               <div>
-                <label className="text-[9px] text-white/50 uppercase tracking-widest mb-1.5 block">Nama Lengkap</label>
+                <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Nama Lengkap</label>
                 <input 
                   value={name} 
                   onChange={e => setName(e.target.value)}
-                  className="w-full bg-[#13161f] border border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#f4a261]/40 transition-all font-medium"
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all font-medium shadow-sm"
                 />
               </div>
               <div>
-                <label className="text-[9px] text-white/50 uppercase tracking-widest mb-1.5 block">NIS (Tidak dapat diubah)</label>
+                <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">NIS (Tidak dapat diubah)</label>
                 <input 
                   value={user.nis} 
                   disabled
-                  className="w-full bg-[#13161f]/50 border border-white/5 rounded-xl px-4 py-3 text-sm outline-none text-white/20 cursor-not-allowed font-mono"
+                  className="w-full bg-gray-100 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none text-gray-300 cursor-not-allowed font-mono"
                 />
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-white/5 space-y-4">
-            <label className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold block">Ubah Password</label>
-            <p className="text-[9px] text-white/40 italic">Kosongkan jika tidak ingin mengubah password.</p>
+          <div className="pt-4 border-t border-gray-100 space-y-4">
+            <label className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold block">Ubah Password</label>
+            <p className="text-[9px] text-gray-500 italic">Kosongkan jika tidak ingin mengubah password.</p>
             
             <div className="grid gap-4">
               <div>
-                <label className="text-[9px] text-white/50 uppercase tracking-widest mb-1.5 block">Password Saat Ini</label>
+                <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Password Saat Ini</label>
                 <input 
                   type="password"
                   value={currentPassword} 
                   onChange={e => setCurrentPassword(e.target.value)}
-                  className="w-full bg-[#13161f] border border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#f4a261]/40 transition-all"
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm"
                   placeholder="••••••••"
                 />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[9px] text-white/50 uppercase tracking-widest mb-1.5 block">Password Baru</label>
+                  <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Password Baru</label>
                   <input 
                     type="password"
                     value={newPassword} 
                     onChange={e => setNewPassword(e.target.value)}
-                    className="w-full bg-[#13161f] border border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#f4a261]/40 transition-all"
+                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm"
                     placeholder="••••••••"
                   />
                 </div>
                 <div>
-                  <label className="text-[9px] text-white/50 uppercase tracking-widest mb-1.5 block">Konfirmasi Password Baru</label>
+                  <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Konfirmasi Password Baru</label>
                   <input 
                     type="password"
                     value={confirmPassword} 
                     onChange={e => setConfirmPassword(e.target.value)}
-                    className="w-full bg-[#13161f] border border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#f4a261]/40 transition-all"
+                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm"
                     placeholder="••••••••"
                   />
                 </div>
@@ -1905,7 +1917,7 @@ function ProfilePage({ user, onUpdate }: { user: User, onUpdate: (u: User) => vo
           <button 
             type="submit"
             disabled={submitting}
-            className="w-full bg-[#f4a261] hover:bg-[#f4a261]/90 text-[#0f1117] font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+            className="w-full bg-[#10b981] hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
           >
             {submitting ? <Activity size={14} className="animate-spin" /> : <Save size={14} />}
             Simpan Perubahan Profil
@@ -1913,10 +1925,10 @@ function ProfilePage({ user, onUpdate }: { user: User, onUpdate: (u: User) => vo
         </form>
       </div>
 
-      <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-5 flex items-center justify-between group">
+      <div className="bg-red-50 border border-red-100 rounded-2xl p-5 flex items-center justify-between group">
         <div>
           <h4 className="text-xs font-bold text-red-400/80 mb-1 group-hover:text-red-400 transition-colors">Zona Bahaya</h4>
-          <p className="text-[9px] text-white/20 uppercase tracking-tighter">Hubungi Admin jika Anda ingin menghapus akun ini.</p>
+          <p className="text-[9px] text-gray-300 uppercase tracking-tighter">Hubungi Admin jika Anda ingin menghapus akun ini.</p>
         </div>
         <UserX size={20} className="text-red-500/20 group-hover:text-red-500/40 transition-colors" />
       </div>
@@ -1935,27 +1947,27 @@ function ConfirmModal({
 }: any) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-[#0a0c10]/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#1a1d27] border border-white/10 rounded-2xl p-5 w-full max-w-[320px] shadow-2xl"
+        className="bg-white border border-gray-200 rounded-2xl p-5 w-full max-w-75 shadow-2xl shadow-gray-300/30"
       >
         <div className={cn(
           "flex items-center gap-3 mb-3",
-          confirmVariant === "danger" ? "text-red-400" : (confirmVariant === "warning" ? "text-amber-400" : "text-[#f4a261]")
+          confirmVariant === "danger" ? "text-red-500" : (confirmVariant === "warning" ? "text-amber-500" : "text-emerald-600")
         )}>
           {isAlert ? <AlertCircle size={20} /> : <AlertCircle size={20} />}
           <h3 className="font-serif text-lg font-bold">{title}</h3>
         </div>
-        <p className="text-white/60 text-xs mb-5 leading-relaxed">
+        <p className="text-gray-600 text-xs mb-5 leading-relaxed text-balance">
           {message}
         </p>
         <div className="flex gap-2">
           {!isAlert && (
             <button 
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-white/10 text-white/40 font-bold text-[10px] uppercase tracking-widest hover:bg-white/5 transition-all"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-all"
             >
               Batal
             </button>
@@ -1965,8 +1977,8 @@ function ConfirmModal({
             className={cn(
               "flex-1 py-2.5 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all",
               confirmVariant === "danger" ? "bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20" : 
-              (confirmVariant === "warning" ? "bg-amber-500 text-[#0f1117] hover:bg-amber-600 shadow-lg shadow-amber-500/20" : 
-              "bg-[#f4a261] text-[#0f1117] hover:opacity-90 shadow-lg shadow-[#f4a261]/20")
+              (confirmVariant === "warning" ? "bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/20" : 
+              "bg-[#10b981] text-white hover:bg-emerald-600 shadow-lg shadow-emerald-200/60")
             )}
           >
             {isAlert ? "Tutup" : confirmLabel}
@@ -2090,7 +2102,7 @@ function AdminMonitor({ user }: { user: User }) {
       const GRAY_HEADER = "FF2C2F3E";
       const GRAY_ROW_ALT = "FFF5F5F5";
 
-      const styleHeader = (row: ExcelJS.Row, bgColor = GRAY_HEADER) => {
+      const styleHeader = (row: import('exceljs').Row, bgColor = GRAY_HEADER) => {
         row.eachCell(cell => {
           cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgColor } };
           cell.font = { bold: true, color: { argb: bgColor === GRAY_HEADER ? WHITE : "FF1A1D27" }, size: 10 };
@@ -2105,7 +2117,7 @@ function AdminMonitor({ user }: { user: User }) {
         row.height = 28;
       };
 
-      const styleDataRow = (row: ExcelJS.Row, isAlt: boolean) => {
+      const styleDataRow = (row: import('exceljs').Row, isAlt: boolean) => {
         row.eachCell({ includeEmpty: true }, cell => {
           cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: isAlt ? GRAY_ROW_ALT : WHITE } };
           cell.font = { size: 9, color: { argb: "FF333333" } };
@@ -2119,7 +2131,7 @@ function AdminMonitor({ user }: { user: User }) {
         row.height = 18;
       };
 
-      const addSheetTitle = (ws: ExcelJS.Worksheet, title: string, subtitle: string, colCount: number) => {
+      const addSheetTitle = (ws: import('exceljs').Worksheet, title: string, subtitle: string, colCount: number) => {
         ws.mergeCells(1, 1, 1, colCount);
         const titleRow = ws.getRow(1);
         titleRow.getCell(1).value = title;
@@ -2344,8 +2356,8 @@ function AdminMonitor({ user }: { user: User }) {
   }, [user]);
 
   if (loadingStats && !stats) return (
-    <div className="h-64 flex flex-col items-center justify-center gap-4 text-white/20">
-      <Activity className="animate-spin text-[#f4a261]" />
+    <div className="h-64 flex flex-col items-center justify-center gap-4 text-gray-300">
+      <Activity className="animate-spin text-[#10b981]" />
       <p className="text-xs uppercase tracking-widest">Menghubungkan ke pusat data...</p>
     </div>
   );
@@ -2360,17 +2372,17 @@ function AdminMonitor({ user }: { user: User }) {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-100">
         <div className="flex-1">
           <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-1 flex items-center gap-2">
-            <ShieldCheck className="text-[#f4a261] shrink-0" size={24} /> Panel Monitoring
+            <ShieldCheck className="text-[#10b981] shrink-0" size={24} /> Panel Monitoring
           </h2>
-          <p className="text-white/40 text-xs sm:text-sm tracking-wide">Monitoring real-time Jurnal Harian Siswa.</p>
+          <p className="text-gray-500 text-xs sm:text-sm tracking-wide">Monitoring real-time Jurnal Harian Siswa.</p>
         </div>
         <button 
           onClick={exportToExcel}
           disabled={exporting}
-          className="flex items-center justify-center gap-2 bg-[#f4a261]/10 border border-[#f4a261]/30 text-[#f4a261] px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#f4a261]/20 transition-all h-10"
+          className="flex items-center justify-center gap-2 bg-emerald-100 border border-emerald-300 text-[#10b981] px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#10b981]/20 transition-all h-10"
         >
           {exporting ? <Activity size={14} className="animate-spin" /> : <FileSpreadsheet size={16} />}
           Export Excel
@@ -2378,7 +2390,7 @@ function AdminMonitor({ user }: { user: User }) {
       </header>
 
       {/* Sub-Tabs Navigation */}
-      <div className="flex bg-[#13161f] p-1 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
+      <div className="flex bg-gray-50 p-1 rounded-2xl border border-gray-100 overflow-x-auto no-scrollbar shadow-inner">
         {[
           { id: "dashboard", label: "Overview", icon: Grid },
           { id: "siswa", label: "Siswa", icon: UserIcon },
@@ -2390,7 +2402,7 @@ function AdminMonitor({ user }: { user: User }) {
             onClick={() => setActiveSubTab(t.id)}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap",
-              activeSubTab === t.id ? "bg-[#f4a261] text-[#0f1117]" : "text-white/30 hover:text-white/60 hover:bg-white/5"
+              activeSubTab === t.id ? "bg-emerald-500 text-white shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
             )}
           >
             <t.icon size={14} />
@@ -2410,17 +2422,17 @@ function AdminMonitor({ user }: { user: User }) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <section className="bg-[#1a1d27] border border-white/5 rounded-3xl p-6 shadow-xl">
+              <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold uppercase tracking-widest text-xs text-white/30">Keyword Analysis</h3>
-                  <span className="text-[10px] text-[#f4a261] font-bold">SENTIMAN GLOBAL</span>
+                  <h3 className="font-bold uppercase tracking-widest text-xs text-gray-400">Keyword Analysis</h3>
+                  <span className="text-[10px] text-[#10b981] font-bold">SENTIMAN GLOBAL</span>
                 </div>
                 <KeywordMoodChart entries={stats.allEntries} />
               </section>
 
-              <section className="bg-[#1a1d27] border border-white/5 rounded-3xl p-6 shadow-xl">
-                 <h3 className="font-bold uppercase tracking-widest text-xs text-white/30 mb-6">Distribusi Mood Siswa</h3>
-                 <div className="h-[320px] w-full">
+              <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+                 <h3 className="font-bold uppercase tracking-widest text-xs text-gray-400 mb-6">Distribusi Mood Siswa</h3>
+                 <div className="h-80 w-full">
                    <ResponsiveContainer width="100%" height="100%">
                      <PieChart>
                        <Pie
@@ -2438,8 +2450,8 @@ function AdminMonitor({ user }: { user: User }) {
                          ))}
                        </Pie>
                        <Tooltip 
-                         contentStyle={{ backgroundColor: '#13161f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                         labelStyle={{ color: 'white' }}
+                         contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px' }}
+                         labelStyle={{ color: '#374151' }}
                        />
                      </PieChart>
                    </ResponsiveContainer>
@@ -2450,26 +2462,26 @@ function AdminMonitor({ user }: { user: User }) {
         )}
 
         {activeSubTab === "siswa" && (
-          <motion.div key="users" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#1a1d27] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <motion.div key="users" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <UserIcon size={18} className="text-[#4cc9a0]" />
                 <h3 className="font-bold uppercase tracking-widest text-xs">Manajemen Siswa</h3>
               </div>
               <div className="relative w-full sm:w-64">
-                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
                 <input 
                   type="text" 
                   placeholder="Cari Nama/NIS..." 
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full bg-[#13161f] border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-[#f4a261]/40"
+                  className="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 shadow-sm"
                 />
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-[#13161f]/50 text-[10px] text-white/40 uppercase tracking-widest border-b border-white/5">
+                <thead className="bg-gray-100 text-[10px] text-gray-500 uppercase tracking-widest border-b border-gray-100">
                   <tr>
                     <th className="px-6 py-4">Siswa</th>
                     <th className="px-6 py-4">NIS</th>
@@ -2478,14 +2490,14 @@ function AdminMonitor({ user }: { user: User }) {
                     <th className="px-6 py-4 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-gray-100">
                   {(stats.allUsers || []).filter((u: any) => u.name.toLowerCase().includes(searchTerm.toLowerCase()) || u.nis.includes(searchTerm)).map((u: any) => (
-                    <tr key={u.id} className="hover:bg-white/[0.01] transition-colors text-xs">
+                    <tr key={u.id} className="hover:bg-gray-50 transition-colors text-xs">
                       <td className="px-6 py-4">
                         <div className="font-bold">{u.name}</div>
-                        <div className="text-[10px] text-white/20">Student Account</div>
+                        <div className="text-[10px] text-gray-300">Student Account</div>
                       </td>
-                      <td className="px-6 py-4 font-mono text-white/40">{u.nis}</td>
+                      <td className="px-6 py-4 font-mono text-gray-500">{u.nis}</td>
                       <td className="px-6 py-4">
                         <span className={cn(
                           "px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tighter",
@@ -2494,7 +2506,7 @@ function AdminMonitor({ user }: { user: User }) {
                           {u.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-white/30">{new Date(u.createdAt).toLocaleDateString("id-ID")}</td>
+                      <td className="px-6 py-4 text-gray-400">{new Date(u.createdAt).toLocaleDateString("id-ID")}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button 
@@ -2509,7 +2521,7 @@ function AdminMonitor({ user }: { user: User }) {
                           </button>
                           <button 
                             onClick={() => deleteUser(u.id, u.name)}
-                            className="p-2 hover:bg-red-500/10 text-white/10 hover:text-red-500 rounded-lg transition-all"
+                            className="p-2 hover:bg-red-500/10 text-gray-200 hover:text-red-500 rounded-lg transition-all"
                             title="Hapus"
                           >
                             <Trash2 size={16} />
@@ -2526,19 +2538,19 @@ function AdminMonitor({ user }: { user: User }) {
 
         {activeSubTab === "jurnal" && (
           <motion.div key="journals" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <div className="bg-[#1a1d27] border border-white/5 rounded-3xl p-6 flex items-center justify-between">
+            <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 flex items-center justify-between shadow-sm">
                <div className="flex items-center gap-2">
-                 <BookOpen size={18} className="text-[#f4a261]" />
+                 <BookOpen size={18} className="text-[#10b981]" />
                  <h3 className="font-bold uppercase tracking-widest text-xs">Arsip Seluruh Jurnal Siswa</h3>
                </div>
                <div className="relative w-64">
-                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
                 <input 
                   type="text" 
                   placeholder="Cari Jurnal/Nama/NIS..." 
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full bg-[#13161f] border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-[#f4a261]/40"
+                  className="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 shadow-sm"
                 />
               </div>
             </div>
@@ -2552,31 +2564,31 @@ function AdminMonitor({ user }: { user: User }) {
                 <div 
                   key={e.id} 
                   onClick={() => setSelectedEntry(e)}
-                  className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 hover:border-[#f4a261]/30 transition-all group relative cursor-pointer"
+                  className="bg-white border border-gray-100 rounded-2xl p-4 hover:border-emerald-300 transition-all group relative cursor-pointer"
                 >
                    <div className="flex items-start gap-4">
-                      <div className="text-3xl p-3 bg-[#13161f] rounded-xl border border-white/5 group-hover:border-[#f4a261]/30 transition-all">
+                      <div className="text-3xl p-3 bg-gray-50 rounded-xl border border-gray-100 group-hover:border-emerald-300 transition-all">
                         {e.mood}
                       </div>
                       <div className="flex-1 min-w-0">
                          <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-bold text-sm text-[#f4a261] truncate pr-8">{e.title}</h4>
-                            <span className="text-[9px] text-white/20 uppercase font-mono">{new Date(e.createdAt).toLocaleString("id-ID")}</span>
+                            <h4 className="font-bold text-sm text-[#10b981] truncate pr-8">{e.title}</h4>
+                            <span className="text-[9px] text-gray-300 uppercase font-mono">{new Date(e.createdAt).toLocaleString("id-ID")}</span>
                          </div>
                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-white/40 uppercase">{e.user?.name?.[0]}</div>
-                            <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{e.user?.name} · {e.user?.nis}</span>
+                            <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[8px] font-bold text-emerald-600 uppercase">{e.user?.name?.[0]}</div>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{e.user?.name} · {e.user?.nis}</span>
                          </div>
-                         <p className="text-xs text-white/60 line-clamp-2 leading-relaxed mb-3 italic">"{e.body}"</p>
+                         <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-3 italic">"{e.body}"</p>
                          
-                         <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                             <div className="flex flex-wrap gap-2">
-                               {e.ref1 && <span className="text-[8px] bg-white/5 px-2 py-1 rounded text-white/30 uppercase tracking-tighter">Refleksi Aktif</span>}
-                               {e.moodLabel && <span className="text-[8px] bg-white/5 px-2 py-1 rounded text-white/30 uppercase tracking-tighter">{e.moodLabel}</span>}
-                               <div className="flex items-center gap-2 text-[8px] text-white/20 font-mono ml-2">
-                                 <span className="flex items-center gap-0.5 bg-white/5 px-1.5 py-0.5 rounded border border-white/5"><Eye size={8} className="text-[#f4a261]" /> {e.viewCount || 0}</span>
-                                 <span className="flex items-center gap-0.5 bg-white/5 px-1.5 py-0.5 rounded border border-white/5"><MessageCircle size={8} className="text-[#4cc9a0]" /> {e._count?.comments || 0}</span>
-                                 <span className="flex items-center gap-0.5 bg-white/5 px-1.5 py-0.5 rounded border border-white/5"><Smile size={8} className="text-pink-400" /> {e.reactions?.length || 0}</span>
+                               {e.ref1 && <span className="text-[8px] bg-gray-50 px-2 py-1 rounded text-gray-400 uppercase tracking-tighter">Refleksi Aktif</span>}
+                               {e.moodLabel && <span className="text-[8px] bg-gray-50 px-2 py-1 rounded text-gray-400 uppercase tracking-tighter">{e.moodLabel}</span>}
+                               <div className="flex items-center gap-2 text-[8px] text-gray-300 font-mono ml-2">
+                                 <span className="flex items-center gap-0.5 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100"><Eye size={8} className="text-[#10b981]" /> {e.viewCount || 0}</span>
+                                 <span className="flex items-center gap-0.5 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100"><MessageCircle size={8} className="text-[#4cc9a0]" /> {e._count?.comments || 0}</span>
+                                 <span className="flex items-center gap-0.5 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100"><Smile size={8} className="text-pink-400" /> {e.reactions?.length || 0}</span>
                                </div>
                             </div>
                             <button 
@@ -2605,7 +2617,7 @@ function AdminMonitor({ user }: { user: User }) {
                                   }
                                 });
                               }}
-                              className="p-2 hover:bg-red-500/10 text-white/10 hover:text-red-500 rounded-lg transition-all"
+                              className="p-2 hover:bg-red-500/10 text-gray-200 hover:text-red-500 rounded-lg transition-all"
                               title="Hapus Jurnal"
                             >
                               <Trash2 size={14} />
@@ -2620,20 +2632,20 @@ function AdminMonitor({ user }: { user: User }) {
         )}
 
         {activeSubTab === "logs" && (
-           <motion.div key="logs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#1a1d27] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
-              <div className="p-6 border-b border-white/5 flex items-center justify-between">
+           <motion.div key="logs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Activity size={18} className="text-blue-400" />
                   <h3 className="font-bold uppercase tracking-widest text-xs">Live System Logs</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-[10px] text-white/30 uppercase tracking-widest">Auto Monitoring</span>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">Auto Monitoring</span>
                 </div>
               </div>
-              <div className="overflow-x-auto max-h-[600px]">
+              <div className="overflow-x-auto max-h-150">
                 <table className="w-full text-left">
-                  <thead className="sticky top-0 bg-[#161a23] text-[9px] text-white/40 uppercase tracking-widest border-b border-white/5 z-10">
+                  <thead className="sticky top-0 bg-gray-100 text-[9px] text-gray-500 uppercase tracking-widest border-b border-gray-100 z-10">
                     <tr>
                       <th className="px-6 py-4">Waktu</th>
                       <th className="px-6 py-4">User</th>
@@ -2641,11 +2653,11 @@ function AdminMonitor({ user }: { user: User }) {
                       <th className="px-6 py-4">Details</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-gray-100">
                     {stats.recentLogs.map((log: any) => (
-                      <tr key={log.id} className="hover:bg-white/[0.01] transition-colors text-[10px] font-mono">
-                        <td className="px-6 py-4 text-white/30 whitespace-nowrap">{new Date(log.createdAt).toLocaleString("id-ID")}</td>
-                        <td className="px-6 py-4 font-bold text-[#f4a261]">{log.user?.name?.split(' ')[0] || "System"}</td>
+                      <tr key={log.id} className="hover:bg-gray-50 transition-colors text-[10px] font-mono">
+                        <td className="px-6 py-4 text-gray-400 whitespace-nowrap">{new Date(log.createdAt).toLocaleString("id-ID")}</td>
+                        <td className="px-6 py-4 font-bold text-[#10b981]">{log.user?.name?.split(' ')[0] || "System"}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={cn(
                             "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-tighter",
@@ -2655,7 +2667,7 @@ function AdminMonitor({ user }: { user: User }) {
                             {log.action}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-white/50 truncate max-w-sm">{log.details}</td>
+                        <td className="px-6 py-4 text-gray-500 truncate max-w-sm">{log.details}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -2691,11 +2703,11 @@ function AdminMonitor({ user }: { user: User }) {
 
 function StatCard({ label, value, unit, className }: any) {
   return (
-    <div className={cn("bg-[#1a1d27] border border-white/5 rounded-2xl p-4 sm:p-5 shadow-inner transition-all hover:border-white/10 flex flex-col justify-between h-full", className)}>
-      <div className="text-[9px] sm:text-[10px] text-white/30 font-bold uppercase tracking-[0.2em] mb-2">{label}</div>
+    <div className={cn("bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all hover:border-emerald-100 flex flex-col justify-between h-full", className)}>
+      <div className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-2">{label}</div>
       <div className="flex items-baseline gap-1.5 flex-wrap">
-        <div className="text-xl sm:text-2xl font-bold text-white/90 tracking-tight leading-none">{value}</div>
-        {unit && <div className="text-[9px] sm:text-[10px] text-[#f4a261] font-bold uppercase tracking-tighter">{unit}</div>}
+        <div className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight leading-none">{value}</div>
+        {unit && <div className="text-[9px] sm:text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">{unit}</div>}
       </div>
     </div>
   );
