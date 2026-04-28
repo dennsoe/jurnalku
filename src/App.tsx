@@ -300,7 +300,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
         <div className="mb-5 text-center">
           <h1 className="font-serif text-xl font-bold text-[#f4a261] mb-0.5">JurnalKu</h1>
           <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase">
-            {isRegister ? "Registrasi Akun" : "Enterprise Portal SMK"}
+            {isRegister ? "Registrasi Akun" : "Self Acceptance Portal SMK"}
           </p>
         </div>
 
@@ -2080,7 +2080,7 @@ function AdminMonitor({ user }: { user: User }) {
     try {
       const ExcelJS = (await import("exceljs")).default;
       const wb = new ExcelJS.Workbook();
-      wb.creator = "JurnalKu SMK Enterprise";
+      wb.creator = "JurnalKu Self Acceptance";
       wb.created = new Date();
 
       const ORANGE = "FFCD7F3F";
@@ -2151,7 +2151,7 @@ function AdminMonitor({ user }: { user: User }) {
         { key: "c", width: 20 },
         { key: "d", width: 20 },
       ];
-      addSheetTitle(wsRingkasan, "JurnalKu SMK Enterprise — Laporan Ekspor", `Diekspor pada: ${exportDate}`, 4);
+      addSheetTitle(wsRingkasan, "JurnalKu Self Acceptance — Laporan Ekspor", `Diekspor pada: ${exportDate}`, 4);
 
       const moodCount: Record<string, number> = {};
       stats.allEntries.forEach((e: any) => {
