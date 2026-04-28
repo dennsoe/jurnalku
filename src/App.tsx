@@ -2073,35 +2073,255 @@ function AdminMonitor({ user }: { user: User }) {
     });
   };
 
-  const exportToCSV = () => {
+  const exportToExcel = async () => {
     if (!stats || !stats.allEntries) return;
     setExporting(true);
-    
-    try {
-      const headers = ["ID", "NIS", "Nama Siswa", "Mood", "Mood Label", "Judul", "Isi Jurnal", "Refleksi 1", "Refleksi 2", "Refleksi 3", "Tanggal Dibuat"];
-      const rows = stats.allEntries.map((e: any) => [
-        e.id,
-        `"${(e.user?.nis || "N/A")}"`,
-        `"${(e.user?.name || "Unknown").replace(/"/g, '""')}"`,
-        `"${(e.mood || "")}"`,
-        `"${(e.moodLabel || "")}"`,
-        `"${(e.title || "").replace(/"/g, '""')}"`,
-        `"${(e.body || "").replace(/"/g, '""')}"`,
-        `"${(e.ref1 || "").replace(/"/g, '""')}"`,
-        `"${(e.ref2 || "").replace(/"/g, '""')}"`,
-        `"${(e.ref3 || "").replace(/"/g, '""')}"`,
-        new Date(e.createdAt).toLocaleString("id-ID")
-      ]);
 
-      const csvContent = [headers, ...rows].map(r => r.join(",")).join("\n");
-      const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+    try {
+      const ExcelJS = (await import("exceljs")).default;
+      const wb = new ExcelJS.Workbook();
+      wb.creator = "JurnalKu SMK Enterprise";
+      wb.created = new Date();
+
+      const ORANGE = "FFCD7F3F";
+      const ORANGE_LIGHT = "FFFFF3E8";
+      const DARK_BG = "FF1A1D27";
+      const WHITE = "FFFFFFFF";
+      const GRAY_HEADER = "FF2C2F3E";
+      const GRAY_ROW_ALT = "FFF5F5F5";
+
+      const styleHeader = (row: ExcelJS.Row, bgColor = GRAY_HEADER) => {
+        row.eachCell(cell => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgColor } };
+          cell.font = { bold: true, color: { argb: bgColor === GRAY_HEADER ? WHITE : "FF1A1D27" }, size: 10 };
+          cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+          cell.border = {
+            top: { style: "thin", color: { argb: "FFD0D0D0" } },
+            bottom: { style: "thin", color: { argb: "FFD0D0D0" } },
+            left: { style: "thin", color: { argb: "FFD0D0D0" } },
+            right: { style: "thin", color: { argb: "FFD0D0D0" } },
+          };
+        });
+        row.height = 28;
+      };
+
+      const styleDataRow = (row: ExcelJS.Row, isAlt: boolean) => {
+        row.eachCell({ includeEmpty: true }, cell => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: isAlt ? GRAY_ROW_ALT : WHITE } };
+          cell.font = { size: 9, color: { argb: "FF333333" } };
+          cell.alignment = { vertical: "middle", wrapText: true };
+          cell.border = {
+            bottom: { style: "hair", color: { argb: "FFE0E0E0" } },
+            left: { style: "hair", color: { argb: "FFE0E0E0" } },
+            right: { style: "hair", color: { argb: "FFE0E0E0" } },
+          };
+        });
+        row.height = 18;
+      };
+
+      const addSheetTitle = (ws: ExcelJS.Worksheet, title: string, subtitle: string, colCount: number) => {
+        ws.mergeCells(1, 1, 1, colCount);
+        const titleRow = ws.getRow(1);
+        titleRow.getCell(1).value = title;
+        titleRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: ORANGE } };
+        titleRow.getCell(1).font = { bold: true, size: 14, color: { argb: WHITE } };
+        titleRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+        titleRow.height = 36;
+
+        ws.mergeCells(2, 1, 2, colCount);
+        const subRow = ws.getRow(2);
+        subRow.getCell(1).value = subtitle;
+        subRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: ORANGE_LIGHT } };
+        subRow.getCell(1).font = { italic: true, size: 9, color: { argb: "FF888888" } };
+        subRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+        subRow.height = 20;
+
+        ws.addRow([]);
+      };
+
+      const exportDate = new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" });
+
+      // =====================
+      // SHEET 1: RINGKASAN
+      // =====================
+      const wsRingkasan = wb.addWorksheet("Ringkasan", { properties: { tabColor: { argb: ORANGE } } });
+      wsRingkasan.columns = [
+        { key: "a", width: 30 },
+        { key: "b", width: 25 },
+        { key: "c", width: 20 },
+        { key: "d", width: 20 },
+      ];
+      addSheetTitle(wsRingkasan, "JurnalKu SMK Enterprise — Laporan Ekspor", `Diekspor pada: ${exportDate}`, 4);
+
+      const moodCount: Record<string, number> = {};
+      stats.allEntries.forEach((e: any) => {
+        const label = e.moodLabel || e.mood || "Tidak diketahui";
+        moodCount[label] = (moodCount[label] || 0) + 1;
+      });
+      const todayStr = new Date().toDateString();
+      const jurnalHariIni = stats.allEntries.filter((e: any) => new Date(e.createdAt).toDateString() === todayStr).length;
+      const totalReaksi = stats.allEntries.reduce((acc: number, e: any) => acc + (e.reactions?.length || 0), 0);
+      const totalKomentar = stats.allEntries.reduce((acc: number, e: any) => acc + (e._count?.comments || 0), 0);
+
+      const summaryData = [
+        ["STATISTIK UMUM", "", "", ""],
+        ["Total Siswa Aktif", stats.totalUsers, "", ""],
+        ["Total Jurnal Tercatat", stats.totalEntries, "", ""],
+        ["Jurnal Dibuat Hari Ini", jurnalHariIni, "", ""],
+        ["Total Reaksi", totalReaksi, "", ""],
+        ["Total Komentar", totalKomentar, "", ""],
+        ["Log Audit (50 terbaru)", stats.recentLogs?.length || 0, "", ""],
+        ["", "", "", ""],
+        ["DISTRIBUSI MOOD", "", "", ""],
+        ...Object.entries(moodCount).map(([mood, count]) => [mood, count, `${((count / stats.totalEntries) * 100).toFixed(1)}%`, ""]),
+      ];
+
+      summaryData.forEach((rowData, idx) => {
+        const row = wsRingkasan.addRow(rowData);
+        if (rowData[0] === "STATISTIK UMUM" || rowData[0] === "DISTRIBUSI MOOD") {
+          row.eachCell(cell => {
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: DARK_BG } };
+            cell.font = { bold: true, color: { argb: ORANGE.replace("FF", "") }, size: 9, italic: true };
+          });
+          row.height = 20;
+        } else if (rowData[0] !== "") {
+          styleDataRow(row, idx % 2 === 0);
+          row.getCell(1).font = { bold: true, size: 9 };
+          row.getCell(2).alignment = { horizontal: "center", vertical: "middle" };
+        }
+      });
+
+      // =====================
+      // SHEET 2: JURNAL SISWA
+      // =====================
+      const wsJurnal = wb.addWorksheet("Jurnal Siswa", { properties: { tabColor: { argb: "FF4CC9A0" } } });
+      wsJurnal.columns = [
+        { key: "no", header: "No", width: 6 },
+        { key: "nis", header: "NIS", width: 14 },
+        { key: "nama", header: "Nama Siswa", width: 22 },
+        { key: "mood", header: "Mood", width: 8 },
+        { key: "moodLabel", header: "Label Mood", width: 18 },
+        { key: "judul", header: "Judul Jurnal", width: 28 },
+        { key: "isi", header: "Isi Jurnal", width: 50 },
+        { key: "ref1", header: "Refleksi 1", width: 30 },
+        { key: "ref2", header: "Refleksi 2", width: 30 },
+        { key: "ref3", header: "Refleksi 3", width: 30 },
+        { key: "reaksi", header: "Reaksi", width: 10 },
+        { key: "komentar", header: "Komentar", width: 10 },
+        { key: "viewCount", header: "Views", width: 8 },
+        { key: "tanggal", header: "Tanggal Dibuat", width: 22 },
+      ];
+
+      addSheetTitle(wsJurnal, "Data Jurnal Siswa", `Total: ${stats.allEntries.length} jurnal · Diekspor: ${exportDate}`, 14);
+      const hJurnal = wsJurnal.addRow(wsJurnal.columns.map((c: any) => c.header));
+      styleHeader(hJurnal, GRAY_HEADER);
+
+      stats.allEntries.forEach((e: any, i: number) => {
+        const row = wsJurnal.addRow({
+          no: i + 1,
+          nis: e.user?.nis || "N/A",
+          nama: e.user?.name || "Unknown",
+          mood: e.mood || "",
+          moodLabel: e.moodLabel || "",
+          judul: e.title || "",
+          isi: e.body || "",
+          ref1: e.ref1 || "",
+          ref2: e.ref2 || "",
+          ref3: e.ref3 || "",
+          reaksi: e.reactions?.length || 0,
+          komentar: e._count?.comments || 0,
+          viewCount: e.viewCount || 0,
+          tanggal: new Date(e.createdAt).toLocaleString("id-ID"),
+        });
+        styleDataRow(row, i % 2 !== 0);
+        row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
+        row.getCell(11).alignment = { horizontal: "center", vertical: "middle" };
+        row.getCell(12).alignment = { horizontal: "center", vertical: "middle" };
+        row.getCell(13).alignment = { horizontal: "center", vertical: "middle" };
+      });
+
+      wsJurnal.views = [{ state: "frozen", ySplit: 4 }];
+
+      // =====================
+      // SHEET 3: DAFTAR SISWA
+      // =====================
+      const wsSiswa = wb.addWorksheet("Daftar Siswa", { properties: { tabColor: { argb: "FF4A9EDB" } } });
+      wsSiswa.columns = [
+        { key: "no", header: "No", width: 6 },
+        { key: "nis", header: "NIS", width: 16 },
+        { key: "nama", header: "Nama Lengkap", width: 28 },
+        { key: "status", header: "Status", width: 14 },
+        { key: "totalJurnal", header: "Total Jurnal", width: 14 },
+        { key: "terdaftar", header: "Tanggal Daftar", width: 22 },
+      ];
+
+      addSheetTitle(wsSiswa, "Daftar Siswa Terdaftar", `Total: ${stats.allUsers?.length || 0} siswa · Diekspor: ${exportDate}`, 6);
+      const hSiswa = wsSiswa.addRow(wsSiswa.columns.map((c: any) => c.header));
+      styleHeader(hSiswa, GRAY_HEADER);
+
+      (stats.allUsers || []).forEach((u: any, i: number) => {
+        const totalJurnal = stats.allEntries.filter((e: any) => e.user?.nis === u.nis).length;
+        const row = wsSiswa.addRow({
+          no: i + 1,
+          nis: u.nis,
+          nama: u.name,
+          status: u.status === "ACTIVE" ? "Aktif" : "Nonaktif",
+          totalJurnal,
+          terdaftar: new Date(u.createdAt).toLocaleString("id-ID"),
+        });
+        styleDataRow(row, i % 2 !== 0);
+        const statusCell = row.getCell(4);
+        statusCell.font = { bold: true, size: 9, color: { argb: u.status === "ACTIVE" ? "FF2E7D32" : "FFC62828" } };
+        statusCell.alignment = { horizontal: "center", vertical: "middle" };
+        row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
+        row.getCell(5).alignment = { horizontal: "center", vertical: "middle" };
+      });
+
+      wsSiswa.views = [{ state: "frozen", ySplit: 4 }];
+
+      // =====================
+      // SHEET 4: AUDIT LOG
+      // =====================
+      const wsLog = wb.addWorksheet("Audit Log", { properties: { tabColor: { argb: "FFDC2626" } } });
+      wsLog.columns = [
+        { key: "no", header: "No", width: 6 },
+        { key: "waktu", header: "Waktu", width: 22 },
+        { key: "pengguna", header: "Pengguna", width: 24 },
+        { key: "aksi", header: "Aksi", width: 22 },
+        { key: "detail", header: "Detail", width: 50 },
+      ];
+
+      addSheetTitle(wsLog, "Audit Log Sistem", `50 aktivitas terbaru · Diekspor: ${exportDate}`, 5);
+      const hLog = wsLog.addRow(wsLog.columns.map((c: any) => c.header));
+      styleHeader(hLog, "FFDC2626");
+
+      (stats.recentLogs || []).forEach((log: any, i: number) => {
+        const row = wsLog.addRow({
+          no: i + 1,
+          waktu: new Date(log.createdAt).toLocaleString("id-ID"),
+          pengguna: log.user?.name || "System",
+          aksi: log.action || "",
+          detail: log.details || "",
+        });
+        styleDataRow(row, i % 2 !== 0);
+        row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
+      });
+
+      wsLog.views = [{ state: "frozen", ySplit: 4 }];
+
+      // =====================
+      // WRITE & DOWNLOAD
+      // =====================
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `jurnalku_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.href = url;
+      link.download = `JurnalKu_Laporan_${new Date().toISOString().split("T")[0]}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
       setConfirmData({
         open: true,
@@ -2148,12 +2368,12 @@ function AdminMonitor({ user }: { user: User }) {
           <p className="text-white/40 text-xs sm:text-sm tracking-wide">Monitoring real-time Jurnal Harian Siswa.</p>
         </div>
         <button 
-          onClick={exportToCSV}
+          onClick={exportToExcel}
           disabled={exporting}
           className="flex items-center justify-center gap-2 bg-[#f4a261]/10 border border-[#f4a261]/30 text-[#f4a261] px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#f4a261]/20 transition-all h-10"
         >
           {exporting ? <Activity size={14} className="animate-spin" /> : <FileSpreadsheet size={16} />}
-          Export CSV
+          Export Excel
         </button>
       </header>
 
