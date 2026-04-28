@@ -14,7 +14,7 @@ async function main() {
     update: {},
     create: {
       nis: "admin",
-      name: "Super Admin JurnalKu",
+      name: "Super Admin Jurnal Self Acceptance",
       password: adminPassword,
       role: "ADMIN",
     },

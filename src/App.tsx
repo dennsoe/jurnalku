@@ -128,7 +128,7 @@ export default function App() {
       {/* Top Nav */}
       <nav className="h-12 sm:h-14 border-b border-white/5 bg-[#13161f]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <span className="font-serif text-base sm:text-lg font-bold text-[#f4a261]">JurnalKu</span>
+          <span className="font-serif text-base sm:text-lg font-bold text-[#f4a261]">Jurnal Self Acceptance</span>
         </div>
         
         <div className="flex items-center gap-3">
@@ -202,7 +202,7 @@ export default function App() {
           setShowLogoutConfirm(false);
         }}
         title="Konfirmasi Logout"
-        message="Apakah Anda yakin ingin keluar dari sistem JurnalKu? Semua sesi Anda akan dihentikan."
+        message="Apakah Anda yakin ingin keluar dari sistem Jurnal Self Acceptance? Semua sesi Anda akan dihentikan."
         confirmLabel="Ya, Keluar"
         confirmVariant="danger"
       />
@@ -298,7 +298,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
         className="w-full max-w-[300px] bg-[#1a1d27] border border-white/10 rounded-2xl p-5 relative z-10 shadow-2xl"
       >
         <div className="mb-5 text-center">
-          <h1 className="font-serif text-xl font-bold text-[#f4a261] mb-0.5">JurnalKu</h1>
+          <h1 className="font-serif text-xl font-bold text-[#f4a261] mb-0.5">Jurnal Self Acceptance</h1>
           <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase">
             {isRegister ? "Registrasi Akun" : "Self Acceptance Portal SMK"}
           </p>
@@ -2047,7 +2047,7 @@ function AdminMonitor({ user }: { user: User }) {
       open: true,
       title: isActivating ? "Aktifkan Akun" : "Nonaktifkan Akun",
       message: isActivating 
-        ? `Aktifkan kembali akun "${name}" agar siswa dapat masuk ke JurnalKu?`
+        ? `Aktifkan kembali akun "${name}" agar siswa dapat masuk ke Jurnal Self Acceptance?`
         : `Nonaktifkan akun "${name}"? Siswa tidak akan bisa masuk ke aplikasi sampai diaktifkan kembali.`,
       label: isActivating ? "Aktifkan" : "Nonaktifkan",
       variant: "warning",
@@ -2080,7 +2080,7 @@ function AdminMonitor({ user }: { user: User }) {
     try {
       const ExcelJS = (await import("exceljs")).default;
       const wb = new ExcelJS.Workbook();
-      wb.creator = "JurnalKu Self Acceptance";
+      wb.creator = "Jurnal Self Acceptance";
       wb.created = new Date();
 
       const ORANGE = "FFCD7F3F";
@@ -2151,7 +2151,7 @@ function AdminMonitor({ user }: { user: User }) {
         { key: "c", width: 20 },
         { key: "d", width: 20 },
       ];
-      addSheetTitle(wsRingkasan, "JurnalKu Self Acceptance — Laporan Ekspor", `Diekspor pada: ${exportDate}`, 4);
+      addSheetTitle(wsRingkasan, "Jurnal Self Acceptance — Laporan Ekspor", `Diekspor pada: ${exportDate}`, 4);
 
       const moodCount: Record<string, number> = {};
       stats.allEntries.forEach((e: any) => {
@@ -2317,7 +2317,7 @@ function AdminMonitor({ user }: { user: User }) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `JurnalKu_Laporan_${new Date().toISOString().split("T")[0]}.xlsx`;
+      link.download = `Jurnal Self Acceptance_Laporan_${new Date().toISOString().split("T")[0]}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
