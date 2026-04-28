@@ -240,7 +240,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
   const validate = () => {
     const errors: {nis?: string, password?: string, name?: string} = {};
     if (!nis) errors.nis = "NIS wajib diisi";
-    else if (!/^\d{7,10}$/.test(nis)) errors.nis = "NIS harus berupa 7-10 digit angka";
+    else if (nis !== "admin" && !/^\d{7,10}$/.test(nis)) errors.nis = "NIS harus berupa 7-10 digit angka";
     
     if (isRegister && !name) errors.name = "Nama lengkap wajib diisi";
     
