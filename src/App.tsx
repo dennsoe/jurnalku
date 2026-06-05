@@ -1976,7 +1976,7 @@ function KeywordMoodChart({ entries }: { entries: Entry[] }) {
 
   return (
     <div className="h-80 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={320}>
         <BarChart data={correlationData} layout="vertical" margin={{ left: isMobile ? 5 : 20, right: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} horizontal={true} vertical={false} />
           <XAxis type="number" domain={[0, 5]} hide />
@@ -2116,7 +2116,7 @@ function GrafikPage({ user }: { user: User }) {
         <section className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 sm:p-6 shadow-sm">
           <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500 mb-4">Aktivitas (7 Hari)</h3>
           <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={192}>
               <LineChart data={frequencyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
                 <XAxis dataKey="date" stroke={chartColors.axis} fontSize={9} axisLine={false} tickLine={false} dy={5} />
@@ -2135,7 +2135,7 @@ function GrafikPage({ user }: { user: User }) {
           <section className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm flex flex-col justify-center">
             <h3 className="text-xs uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500 mb-6">Distribusi Mood</h3>
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={256}>
                 <PieChart>
                   <Pie
                     data={moodDistribution}
@@ -2850,8 +2850,8 @@ function AdminMonitor({ user }: { user: User }) {
 
               <section className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
                  <h3 className="font-bold uppercase tracking-widest text-xs text-gray-400 dark:text-gray-500 mb-6">Distribusi Mood Siswa</h3>
-                 <div className="h-80 w-full">
-                   <ResponsiveContainer width="100%" height="100%">
+                 <div className="h-80 min-h-80 w-full">
+                   <ResponsiveContainer width="100%" height={320}>
                      <PieChart>
                        <Pie
                          data={MOODS.map(m => ({
