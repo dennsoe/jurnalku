@@ -32,14 +32,15 @@ export async function apiFetch(endpoint: string, options: any = {}) {
     return response.data;
   } catch (err: any) {
     if (err.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
+      // Auto-logout jika token invalid/expired
+      if (err.response.status === 401) {
+        localStorage.clear();
+        window.location.reload();
+      }
       throw new Error(err.response.data.error || `Error ${err.response.status}: ${err.response.statusText}`);
     } else if (err.request) {
-      // The request was made but no response was received
       throw new Error("No response from server. Check your connection.");
     } else {
-      // Something happened in setting up the request that triggered an Error
       throw new Error(err.message);
     }
   }

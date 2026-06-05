@@ -558,8 +558,11 @@ async function startServer() {
       if (admin?.role !== Role.ADMIN) return res.status(403).json({ error: "Forbidden" });
 
       await prisma.$transaction([
-        prisma.entry.deleteMany({ where: { userId: id } }),
+        prisma.reaction.deleteMany({ where: { userId: id } }),
+        prisma.comment.deleteMany({ where: { userId: id } }),
+        prisma.jawabanKuesioner.deleteMany({ where: { userId: id } }),
         prisma.auditLog.deleteMany({ where: { userId: id } }),
+        prisma.entry.deleteMany({ where: { userId: id } }),
         prisma.user.delete({ where: { id } })
       ]);
       
@@ -602,7 +605,7 @@ async function startServer() {
     try {
       const decoded: any = jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
       const user = await prisma.user.findUnique({ where: { id: decoded.id }, select: { id: true, role: true } });
-      if (user?.role !== "ADMIN") { res.status(403).json({ error: "Forbidden" }); return null; }
+      if (user?.role !== Role.ADMIN) { res.status(403).json({ error: "Forbidden" }); return null; }
       return decoded;
     } catch { res.status(401).json({ error: "Invalid token" }); return null; }
   };
