@@ -625,7 +625,15 @@ async function startServer() {
         const list = await prisma.kuesioner.findMany({
           orderBy: { createdAt: "desc" },
           include: {
-            indikator: { include: { pertanyaan: true } },
+            indikator: {
+              orderBy: { urutan: "asc" },
+              include: {
+                pertanyaan: {
+                  orderBy: { urutan: "asc" },
+                  include: { opsi: { orderBy: { urutan: "asc" } } }
+                }
+              }
+            },
             _count: { select: { jawaban: true } },
           }
         });
@@ -662,7 +670,11 @@ async function startServer() {
     if (!judul?.trim()) return res.status(400).json({ error: "Judul wajib diisi" });
     try {
       const k = await prisma.kuesioner.create({
-        data: { judul, deskripsi: deskripsi || null, jenis: jenis || "UMUM", createdById: decoded.id }
+        data: { judul, deskripsi: deskripsi || null, jenis: jenis || "UMUM", createdById: decoded.id },
+        include: {
+          indikator: { include: { pertanyaan: { include: { opsi: true } } } },
+          _count: { select: { jawaban: true } },
+        }
       });
       await createAuditLog(decoded.id, "CREATE_KUESIONER", `Created kuesioner: ${judul}`);
       res.json(k);

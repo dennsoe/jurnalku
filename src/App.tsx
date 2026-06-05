@@ -620,7 +620,7 @@ function IntervensiPage({ user }: { user: User }) {
         <div className="grid gap-3">
           {list.map(k => {
             const sudahDiisi = (k.jawaban || []).length > 0;
-            const totalPertanyaan = k.indikator.reduce((s, i) => s + i.pertanyaan.length, 0);
+            const totalPertanyaan = (k.indikator || []).reduce((s, i) => s + (i.pertanyaan || []).length, 0);
             return (
               <motion.div
                 key={k.id}
@@ -647,7 +647,7 @@ function IntervensiPage({ user }: { user: User }) {
                     {k.deskripsi && <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{k.deskripsi}</p>}
                     <div className="flex items-center gap-3 mt-2.5 flex-wrap">
                       <span className="text-[9px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                        <ListChecks size={10} /> {k.indikator.length} Indikator
+                        <ListChecks size={10} /> {(k.indikator || []).length} Indikator
                       </span>
                       <span className="text-[9px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
                         <FileQuestion size={10} /> {totalPertanyaan} Pertanyaan
@@ -682,7 +682,7 @@ function IntervensiPage({ user }: { user: User }) {
 
 // ===== ISI KUESIONER PAGE (Siswa) =====
 function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; user: User; onBack: () => void }) {
-  const totalPertanyaan = kuesioner.indikator.reduce((s, i) => s + i.pertanyaan.length, 0);
+  const totalPertanyaan = (kuesioner.indikator || []).reduce((s, i) => s + (i.pertanyaan || []).length, 0);
   const [jawaban, setJawaban] = useState<Record<string, { nilaiTeks?: string; nilaiAngka?: number; nilaiOpsiId?: string }>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -693,7 +693,7 @@ function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; u
 
   const handleSubmit = async () => {
     // Validasi wajib
-    const missing = kuesioner.indikator.flatMap(i => i.pertanyaan).filter(p => p.wajib && !jawaban[p.id]);
+    const missing = (kuesioner.indikator || []).flatMap(i => (i.pertanyaan || [])).filter(p => p.wajib && !jawaban[p.id]);
     if (missing.length > 0) { setError(`${missing.length} pertanyaan wajib belum dijawab.`); return; }
     setError(null);
     setSubmitting(true);
@@ -738,7 +738,7 @@ function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; u
           <h2 className="font-serif text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 leading-tight">{kuesioner.judul}</h2>
           {kuesioner.deskripsi && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{kuesioner.deskripsi}</p>}
           <div className="flex items-center gap-3 mt-2 text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-            <span className="flex items-center gap-1"><ListChecks size={10} /> {kuesioner.indikator.length} Indikator</span>
+            <span className="flex items-center gap-1"><ListChecks size={10} /> {(kuesioner.indikator || []).length} Indikator</span>
             <span className="flex items-center gap-1"><FileQuestion size={10} /> {totalPertanyaan} Pertanyaan</span>
           </div>
         </div>
@@ -760,7 +760,7 @@ function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; u
       </div>
 
       {/* Indikator & Pertanyaan */}
-      {kuesioner.indikator.map((ind, iIdx) => (
+      {(kuesioner.indikator || []).map((ind, iIdx) => (
         <section key={ind.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
           <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-950 border-b border-emerald-100 dark:border-emerald-900">
             <div className="flex items-center gap-2">
@@ -770,7 +770,7 @@ function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; u
             {ind.deskripsi && <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 mt-1 ml-7">{ind.deskripsi}</p>}
           </div>
           <div className="divide-y divide-gray-50 dark:divide-gray-800">
-            {ind.pertanyaan.map((p, pIdx) => {
+            {(ind.pertanyaan || []).map((p, pIdx) => {
               const val = jawaban[p.id];
               return (
                 <div key={p.id} className="p-4 sm:p-5">
@@ -834,7 +834,7 @@ function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; u
                         )}
                         {p.jenis === "PILIHAN_GANDA" && (
                           <div className="space-y-2">
-                            {p.opsi.map(o => (
+                            {(p.opsi || []).map(o => (
                               <button key={o.id} onClick={() => setJ(p.id, { nilaiOpsiId: o.id, nilaiAngka: o.nilai })}
                                 className={cn("w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all border flex items-center gap-2.5",
                                   val?.nilaiOpsiId === o.id
@@ -3220,7 +3220,7 @@ function AdminKuesionerPanel() {
       ) : (
         <div className="space-y-3">
           {list.map(k => {
-            const totalPertanyaan = k.indikator.reduce((s, i) => s + i.pertanyaan.length, 0);
+            const totalPertanyaan = (k.indikator || []).reduce((s, i) => s + (i.pertanyaan || []).length, 0);
             return (
               <div key={k.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 shadow-sm hover:border-emerald-200 dark:hover:border-emerald-800 transition-all">
                 <div className="flex items-start justify-between gap-3">
@@ -3234,7 +3234,7 @@ function AdminKuesionerPanel() {
                     <h4 className="font-bold text-sm text-gray-800 dark:text-gray-100 mb-1">{k.judul}</h4>
                     {k.deskripsi && <p className="text-[11px] text-gray-400 dark:text-gray-500 line-clamp-1">{k.deskripsi}</p>}
                     <div className="flex items-center gap-3 mt-2 text-[9px] text-gray-400 dark:text-gray-500 flex-wrap">
-                      <span className="flex items-center gap-1"><ListChecks size={9} /> {k.indikator.length} Indikator</span>
+                      <span className="flex items-center gap-1"><ListChecks size={9} /> {(k.indikator || []).length} Indikator</span>
                       <span className="flex items-center gap-1"><FileQuestion size={9} /> {totalPertanyaan} Pertanyaan</span>
                       <span className="flex items-center gap-1"><Users size={9} /> {k._count?.jawaban || 0} Responden</span>
                     </div>
@@ -3379,7 +3379,7 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
     setSavingInd(true);
     try {
       await apiFetch(`/api/kuesioner/${k.id}/indikator`, {
-        method: "POST", body: JSON.stringify({ nama: newIndNama, deskripsi: newIndDesc, urutan: k.indikator.length })
+        method: "POST", body: JSON.stringify({ nama: newIndNama, deskripsi: newIndDesc, urutan: (k.indikator || []).length })
       });
       setNewIndNama(""); setNewIndDesc(""); setShowAddIndikator(false);
       refresh();
@@ -3498,13 +3498,13 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
 
       {/* Indikator List */}
       <div className="space-y-3">
-        {k.indikator.length === 0 && !showAddIndikator && (
+        {(k.indikator || []).length === 0 && !showAddIndikator && (
           <div className="py-10 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
             <ListChecks size={20} className="mx-auto mb-2 text-gray-200 dark:text-gray-700" />
             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">Tambah indikator pertama untuk mulai</p>
           </div>
         )}
-        {k.indikator.map((ind, iIdx) => (
+        {(k.indikator || []).map((ind, iIdx) => (
           <div key={ind.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
             {/* Indikator header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
@@ -3515,7 +3515,7 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
                 {ind.deskripsi && <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">{ind.deskripsi}</p>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[9px] text-gray-400 dark:text-gray-500">{ind.pertanyaan.length} pertanyaan</span>
+                <span className="text-[9px] text-gray-400 dark:text-gray-500">{(ind.pertanyaan || []).length} pertanyaan</span>
                 <button onClick={e => { e.stopPropagation(); hapusIndikator(ind); }} className="p-1 rounded text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all">
                   <Trash2 size={12} />
                 </button>
@@ -3526,10 +3526,10 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
             {/* Pertanyaan list */}
             {expandedInd === ind.id && (
               <div>
-                {ind.pertanyaan.length === 0 && (
+                {(ind.pertanyaan || []).length === 0 && (
                   <div className="px-4 py-5 text-center text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Belum ada pertanyaan</div>
                 )}
-                {ind.pertanyaan.map((p, pIdx) => (
+                {(ind.pertanyaan || []).map((p, pIdx) => (
                   <div key={p.id} className="flex items-start gap-3 px-4 py-3 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <span className="text-[9px] text-gray-300 dark:text-gray-600 font-mono mt-0.5 w-5 shrink-0">{pIdx + 1}.</span>
                     <div className="flex-1 min-w-0">
@@ -3539,7 +3539,7 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
                           {JENIS_ICON[p.jenis]} {JENIS_LABEL[p.jenis]}
                         </span>
                         {!p.wajib && <span className="text-[8px] text-gray-300 dark:text-gray-600 uppercase">Opsional</span>}
-                        {p.opsi.length > 0 && <span className="text-[8px] text-gray-400 dark:text-gray-500">{p.opsi.length} opsi</span>}
+                        {(p.opsi || []).length > 0 && <span className="text-[8px] text-gray-400 dark:text-gray-500">{p.opsi.length} opsi</span>}
                       </div>
                     </div>
                     <button onClick={() => hapusPertanyaan(p)} className="p-1 rounded text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all shrink-0">
