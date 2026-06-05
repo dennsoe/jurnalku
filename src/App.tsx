@@ -561,20 +561,26 @@ function IntervensiPage({ user }: { user: User }) {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Kuesioner | null>(null);
 
-  const fetch = async () => {
+  const fetchKuesioner = async () => {
     setLoading(true);
-    try { setList(await apiFetch("/api/kuesioner")); }
-    catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    try {
+      const data = await apiFetch("/api/kuesioner");
+      setList(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("IntervensiPage fetch error:", e);
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetchKuesioner(); }, []);
 
   if (selected) return (
     <IsiKuesionerPage
       kuesioner={selected}
       user={user}
-      onBack={() => { setSelected(null); fetch(); }}
+      onBack={() => { setSelected(null); fetchKuesioner(); }}
     />
   );
 
@@ -3139,20 +3145,26 @@ function AdminKuesionerPanel() {
   const [showCreate, setShowCreate] = useState(false);
   const [confirmData, setConfirmData] = useState<any>({ open: false });
 
-  const fetch = async () => {
+  const fetchKuesioner = async () => {
     setLoading(true);
-    try { setList(await apiFetch("/api/kuesioner")); }
-    catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    try {
+      const data = await apiFetch("/api/kuesioner");
+      setList(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("AdminKuesionerPanel fetch error:", e);
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetchKuesioner(); }, []);
 
   if (selected) return (
     <AdminKuesionerDetail
       kuesioner={selected}
-      onBack={() => { setSelected(null); fetch(); }}
-      onRefresh={fetch}
+      onBack={() => { setSelected(null); fetchKuesioner(); }}
+      onRefresh={fetchKuesioner}
     />
   );
 
@@ -3166,7 +3178,7 @@ function AdminKuesionerPanel() {
     const next: Record<StatusKuesioner, StatusKuesioner> = { DRAFT: "AKTIF", AKTIF: "TUTUP", TUTUP: "AKTIF" };
     try {
       await apiFetch(`/api/kuesioner/${k.id}`, { method: "PATCH", body: JSON.stringify({ status: next[k.status] }) });
-      fetch();
+      fetchKuesioner();
     } catch (e: any) { alert(e.message); }
   };
 
@@ -3176,7 +3188,7 @@ function AdminKuesionerPanel() {
       message: `Hapus "${k.judul}" beserta semua data jawaban? Tindakan ini tidak dapat dibatalkan.`,
       onConfirm: async () => {
         await apiFetch(`/api/kuesioner/${k.id}`, { method: "DELETE" });
-        setConfirmData({ open: false }); fetch();
+        setConfirmData({ open: false }); fetchKuesioner();
       }
     });
   };
@@ -3248,7 +3260,7 @@ function AdminKuesionerPanel() {
         </div>
       )}
 
-      {showCreate && <CreateKuesionerModal onClose={() => setShowCreate(false)} onCreated={(k) => { setShowCreate(false); setSelected(k); fetch(); }} />}
+      {showCreate && <CreateKuesionerModal onClose={() => setShowCreate(false)} onCreated={(k) => { setShowCreate(false); setSelected(k); fetchKuesioner(); }} />}
       <ConfirmModal open={confirmData.open} onClose={() => setConfirmData({ open: false })}
         onConfirm={confirmData.onConfirm} title={confirmData.title} message={confirmData.message} confirmVariant="danger" />
     </div>
@@ -3345,10 +3357,11 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
 
   const refresh = async () => {
     try {
-      const list: Kuesioner[] = await apiFetch("/api/kuesioner");
-      const updated = list.find(x => x.id === k.id);
+      const data = await apiFetch("/api/kuesioner");
+      const listData: Kuesioner[] = Array.isArray(data) ? data : [];
+      const updated = listData.find(x => x.id === k.id);
       if (updated) setK(updated);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("AdminKuesionerDetail refresh error:", e); }
   };
 
   const toggleStatus = async () => {
@@ -3356,7 +3369,9 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
     try {
       await apiFetch(`/api/kuesioner/${k.id}`, { method: "PATCH", body: JSON.stringify({ status: next[k.status] }) });
       refresh();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) {
+      setConfirmData({ open: true, title: "Gagal", message: e.message, isAlert: true, onConfirm: () => setConfirmData({ open: false }) });
+    }
   };
 
   const addIndikator = async () => {
@@ -3368,8 +3383,9 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
       });
       setNewIndNama(""); setNewIndDesc(""); setShowAddIndikator(false);
       refresh();
-    } catch (e: any) { alert(e.message); }
-    finally { setSavingInd(false); }
+    } catch (e: any) {
+      setConfirmData({ open: true, title: "Gagal", message: e.message, isAlert: true, onConfirm: () => setConfirmData({ open: false }) });
+    } finally { setSavingInd(false); }
   };
 
   const hapusIndikator = (ind: Indikator) => {
