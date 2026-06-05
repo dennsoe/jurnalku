@@ -27,6 +27,8 @@ model User {
   comments  Comment[]
   reactions Reaction[]
   auditLogs AuditLog[]
+  kuesionerDibuat  Kuesioner[]        @relation("KuesionerCreatedBy")
+  jawabanKuesioner JawabanKuesioner[] @relation("JawabanUser")
 }
 
 model Entry {
@@ -86,4 +88,109 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// ===== KUESIONER / INTERVENSI =====
+
+enum JenisKuesioner {
+  UMUM        // Kuesioner umum / asesmen bebas
+  SOSIOMETRI  // Pemetaan hubungan sosial
+  DCM         // Daftar Cek Masalah
+  INVENTORI   // Inventori minat/kepribadian
+}
+
+enum StatusKuesioner {
+  DRAFT
+  AKTIF
+  TUTUP
+}
+
+enum JenisPertanyaan {
+  LIKERT          // Skala 1-5
+  SKALA           // Rating 1-10
+  PILIHAN_GANDA   // Pilih satu opsi
+  YA_TIDAK        // Boolean
+  ESAI            // Teks bebas
+}
+
+model Kuesioner {
+  id          String          @id @default(cuid())
+  judul       String
+  deskripsi   String?         @db.Text
+  jenis       JenisKuesioner  @default(UMUM)
+  status      StatusKuesioner @default(DRAFT)
+  createdById String
+  createdBy   User            @relation("KuesionerCreatedBy", fields: [createdById], references: [id])
+  indikator   Indikator[]
+  jawaban     JawabanKuesioner[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([createdById])
+  @@index([status])
+}
+
+model Indikator {
+  id           String       @id @default(cuid())
+  nama         String
+  deskripsi    String?      @db.Text
+  urutan       Int          @default(0)
+  kuesionerId  String
+  kuesioner    Kuesioner    @relation(fields: [kuesionerId], references: [id], onDelete: Cascade)
+  pertanyaan   Pertanyaan[]
+
+  @@index([kuesionerId])
+}
+
+model Pertanyaan {
+  id           String          @id @default(cuid())
+  teks         String          @db.Text
+  jenis        JenisPertanyaan @default(LIKERT)
+  urutan       Int             @default(0)
+  wajib        Boolean         @default(true)
+  indikatorId  String
+  indikator    Indikator       @relation(fields: [indikatorId], references: [id], onDelete: Cascade)
+  opsi         OpsiJawaban[]
+  detailJawaban DetailJawaban[]
+
+  @@index([indikatorId])
+}
+
+model OpsiJawaban {
+  id           String     @id @default(cuid())
+  teks         String
+  nilai        Int        @default(0)  // nilai numerik untuk skoring
+  urutan       Int        @default(0)
+  pertanyaanId String
+  pertanyaan   Pertanyaan @relation(fields: [pertanyaanId], references: [id], onDelete: Cascade)
+
+  @@index([pertanyaanId])
+}
+
+model JawabanKuesioner {
+  id          String         @id @default(cuid())
+  kuesionerId String
+  kuesioner   Kuesioner      @relation(fields: [kuesionerId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User           @relation("JawabanUser", fields: [userId], references: [id])
+  detail      DetailJawaban[]
+  submittedAt DateTime       @default(now())
+
+  @@unique([kuesionerId, userId])  // satu siswa hanya bisa submit sekali
+  @@index([kuesionerId])
+  @@index([userId])
+}
+
+model DetailJawaban {
+  id               String           @id @default(cuid())
+  jawabanId        String
+  jawaban          JawabanKuesioner @relation(fields: [jawabanId], references: [id], onDelete: Cascade)
+  pertanyaanId     String
+  pertanyaan       Pertanyaan       @relation(fields: [pertanyaanId], references: [id])
+  nilaiTeks        String?          @db.Text  // untuk ESAI
+  nilaiAngka       Int?                       // untuk LIKERT, SKALA, YA_TIDAK (0/1)
+  nilaiOpsiId      String?                    // untuk PILIHAN_GANDA
+
+  @@index([jawabanId])
+  @@index([pertanyaanId])
 }

@@ -33,6 +33,20 @@ import {
   Monitor,
   ClipboardList,
   Lock,
+  Plus,
+  ToggleLeft,
+  ToggleRight,
+  ListChecks,
+  AlignLeft,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  CheckSquare,
+  SlidersHorizontal,
+  FileQuestion,
+  Users,
+  BarChart2,
+  ArrowLeft,
 } from "lucide-react";
 import { 
   BarChart, 
@@ -163,6 +177,31 @@ interface Entry {
   _count?: {
     comments: number;
   };
+}
+
+// ===== KUESIONER TYPES =====
+type JenisKuesioner = "UMUM" | "SOSIOMETRI" | "DCM" | "INVENTORI";
+type StatusKuesioner = "DRAFT" | "AKTIF" | "TUTUP";
+type JenisPertanyaan = "LIKERT" | "SKALA" | "PILIHAN_GANDA" | "YA_TIDAK" | "ESAI";
+
+interface OpsiJawaban { id: string; teks: string; nilai: number; urutan: number; }
+interface Pertanyaan {
+  id: string; teks: string; jenis: JenisPertanyaan;
+  urutan: number; wajib: boolean; indikatorId: string;
+  opsi: OpsiJawaban[];
+}
+interface Indikator {
+  id: string; nama: string; deskripsi?: string;
+  urutan: number; kuesionerId: string;
+  pertanyaan: Pertanyaan[];
+}
+interface Kuesioner {
+  id: string; judul: string; deskripsi?: string;
+  jenis: JenisKuesioner; status: StatusKuesioner;
+  createdAt: string; updatedAt: string;
+  indikator: Indikator[];
+  jawaban?: { id: string; submittedAt: string }[];
+  _count?: { jawaban: number };
 }
 
 // --- App Component ---
@@ -518,34 +557,325 @@ function ReactionButton({ type, emoji, count, active, disabled, onClick }: { typ
 }
 
 function IntervensiPage({ user }: { user: User }) {
+  const [list, setList] = useState<Kuesioner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Kuesioner | null>(null);
+
+  const fetch = async () => {
+    setLoading(true);
+    try { setList(await apiFetch("/api/kuesioner")); }
+    catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetch(); }, []);
+
+  if (selected) return (
+    <IsiKuesionerPage
+      kuesioner={selected}
+      user={user}
+      onBack={() => { setSelected(null); fetch(); }}
+    />
+  );
+
+  const JENIS_LABEL: Record<JenisKuesioner, string> = {
+    UMUM: "Umum", SOSIOMETRI: "Sosiometri", DCM: "DCM", INVENTORI: "Inventori"
+  };
+  const JENIS_COLOR: Record<JenisKuesioner, string> = {
+    UMUM: "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900",
+    SOSIOMETRI: "bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900",
+    DCM: "bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900",
+    INVENTORI: "bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 border-teal-100 dark:border-teal-900",
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-      className="space-y-6"
-    >
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="space-y-5">
       <div>
         <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Intervensi</h2>
-        <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mt-1">
-          Program & Kuesioner dari Guru BK
-        </p>
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mt-1">Program & Kuesioner dari Guru BK</p>
       </div>
 
-      {/* Placeholder — fitur akan ditambahkan oleh admin */}
-      <div className="flex flex-col items-center justify-center py-24 gap-5 border border-dashed border-gray-200 dark:border-gray-700 rounded-3xl bg-gray-50 dark:bg-gray-900/50">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 flex items-center justify-center">
-          <ClipboardList size={28} className="text-emerald-500" />
+      {loading ? (
+        <div className="py-20 flex flex-col items-center gap-3 text-gray-200 dark:text-gray-700">
+          <Activity size={24} className="animate-spin text-[#10b981]" />
+          <span className="text-[10px] uppercase tracking-widest font-bold">Memuat...</span>
         </div>
-        <div className="text-center">
-          <p className="font-bold text-sm text-gray-700 dark:text-gray-200 mb-1">Belum Ada Program Aktif</p>
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest max-w-xs mx-auto leading-relaxed">
-            Kuesioner dan program intervensi dari Guru BK akan muncul di sini
-          </p>
+      ) : list.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-5 border border-dashed border-gray-200 dark:border-gray-700 rounded-3xl bg-gray-50 dark:bg-gray-900/50">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 flex items-center justify-center">
+            <ClipboardList size={28} className="text-emerald-500" />
+          </div>
+          <div className="text-center">
+            <p className="font-bold text-sm text-gray-700 dark:text-gray-200 mb-1">Belum Ada Kuesioner Aktif</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest max-w-xs mx-auto leading-relaxed">Kuesioner dari Guru BK akan muncul di sini</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900">
-          <Lock size={10} className="text-emerald-500" />
-          <span className="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase tracking-widest font-bold">Dikelola oleh Admin</span>
+      ) : (
+        <div className="grid gap-3">
+          {list.map(k => {
+            const sudahDiisi = (k.jawaban || []).length > 0;
+            const totalPertanyaan = k.indikator.reduce((s, i) => s + i.pertanyaan.length, 0);
+            return (
+              <motion.div
+                key={k.id}
+                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                className={cn(
+                  "bg-white dark:bg-gray-900 border rounded-2xl p-4 sm:p-5 shadow-sm transition-all",
+                  sudahDiisi ? "border-emerald-200 dark:border-emerald-800" : "border-gray-100 dark:border-gray-800 hover:border-emerald-200 dark:hover:border-emerald-800 hover:shadow-md cursor-pointer"
+                )}
+                onClick={sudahDiisi ? undefined : () => setSelected(k)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span className={cn("text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border", JENIS_COLOR[k.jenis])}>
+                        {JENIS_LABEL[k.jenis]}
+                      </span>
+                      {sudahDiisi && (
+                        <span className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                          <Check size={8} /> Sudah Diisi
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-bold text-sm text-gray-800 dark:text-gray-100 mb-1 leading-tight">{k.judul}</h3>
+                    {k.deskripsi && <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{k.deskripsi}</p>}
+                    <div className="flex items-center gap-3 mt-2.5 flex-wrap">
+                      <span className="text-[9px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                        <ListChecks size={10} /> {k.indikator.length} Indikator
+                      </span>
+                      <span className="text-[9px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                        <FileQuestion size={10} /> {totalPertanyaan} Pertanyaan
+                      </span>
+                      {sudahDiisi && k.jawaban?.[0] && (
+                        <span className="text-[9px] text-emerald-500 flex items-center gap-1">
+                          <Calendar size={10} /> {new Date(k.jawaban[0].submittedAt).toLocaleDateString("id-ID")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {sudahDiisi ? (
+                      <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center">
+                        <Check size={16} className="text-emerald-500" />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
+                        <ChevronRight size={16} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ===== ISI KUESIONER PAGE (Siswa) =====
+function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; user: User; onBack: () => void }) {
+  const totalPertanyaan = kuesioner.indikator.reduce((s, i) => s + i.pertanyaan.length, 0);
+  const [jawaban, setJawaban] = useState<Record<string, { nilaiTeks?: string; nilaiAngka?: number; nilaiOpsiId?: string }>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const setJ = (pertanyaanId: string, val: typeof jawaban[string]) =>
+    setJawaban(prev => ({ ...prev, [pertanyaanId]: val }));
+
+  const handleSubmit = async () => {
+    // Validasi wajib
+    const missing = kuesioner.indikator.flatMap(i => i.pertanyaan).filter(p => p.wajib && !jawaban[p.id]);
+    if (missing.length > 0) { setError(`${missing.length} pertanyaan wajib belum dijawab.`); return; }
+    setError(null);
+    setSubmitting(true);
+    try {
+      await apiFetch(`/api/kuesioner/${kuesioner.id}/jawab`, {
+        method: "POST",
+        body: JSON.stringify({ jawaban: Object.entries(jawaban).map(([pertanyaanId, v]) => ({ pertanyaanId, ...v })) })
+      });
+      setSubmitted(true);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const LIKERT_LABELS = ["Sangat Tidak Setuju", "Tidak Setuju", "Ragu-ragu", "Setuju", "Sangat Setuju"];
+
+  if (submitted) return (
+    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-24 gap-5 text-center">
+      <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950 border-2 border-emerald-200 dark:border-emerald-800 flex items-center justify-center">
+        <Check size={36} className="text-emerald-500" />
+      </div>
+      <div>
+        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-1">Kuesioner Terkirim!</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Terima kasih telah mengisi kuesioner ini.</p>
+      </div>
+      <button onClick={onBack} className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all">
+        Kembali
+      </button>
+    </motion.div>
+  );
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="space-y-5">
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <button onClick={onBack} className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-emerald-600 transition-all shrink-0 mt-0.5">
+          <ArrowLeft size={16} />
+        </button>
+        <div className="flex-1">
+          <h2 className="font-serif text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 leading-tight">{kuesioner.judul}</h2>
+          {kuesioner.deskripsi && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{kuesioner.deskripsi}</p>}
+          <div className="flex items-center gap-3 mt-2 text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+            <span className="flex items-center gap-1"><ListChecks size={10} /> {kuesioner.indikator.length} Indikator</span>
+            <span className="flex items-center gap-1"><FileQuestion size={10} /> {totalPertanyaan} Pertanyaan</span>
+          </div>
         </div>
       </div>
+
+      {/* Progress */}
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[9px] uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500">Progress Pengisian</span>
+          <span className="text-[9px] font-bold text-emerald-600">{Object.keys(jawaban).length}/{totalPertanyaan}</span>
+        </div>
+        <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-emerald-500 rounded-full"
+            animate={{ width: totalPertanyaan > 0 ? `${(Object.keys(jawaban).length / totalPertanyaan) * 100}%` : "0%" }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+      </div>
+
+      {/* Indikator & Pertanyaan */}
+      {kuesioner.indikator.map((ind, iIdx) => (
+        <section key={ind.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+          <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-950 border-b border-emerald-100 dark:border-emerald-900">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[9px] text-white font-bold">{iIdx + 1}</div>
+              <h4 className="font-bold text-xs text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">{ind.nama}</h4>
+            </div>
+            {ind.deskripsi && <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 mt-1 ml-7">{ind.deskripsi}</p>}
+          </div>
+          <div className="divide-y divide-gray-50 dark:divide-gray-800">
+            {ind.pertanyaan.map((p, pIdx) => {
+              const val = jawaban[p.id];
+              return (
+                <div key={p.id} className="p-4 sm:p-5">
+                  <div className="flex items-start gap-2 mb-3">
+                    <span className="text-[9px] font-bold text-gray-300 dark:text-gray-600 mt-0.5 shrink-0 font-mono">{pIdx + 1}.</span>
+                    <div className="flex-1">
+                      <p className="text-xs sm:text-sm text-gray-800 dark:text-gray-100 leading-relaxed font-medium">
+                        {p.teks}
+                        {p.wajib && <span className="text-red-400 ml-1">*</span>}
+                      </p>
+                      {/* JENIS PERTANYAAN */}
+                      <div className="mt-3">
+                        {p.jenis === "LIKERT" && (
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-5 gap-1.5">
+                              {[1,2,3,4,5].map(n => (
+                                <button key={n} onClick={() => setJ(p.id, { nilaiAngka: n })}
+                                  className={cn("py-2 rounded-xl text-xs font-bold transition-all border flex flex-col items-center gap-0.5",
+                                    val?.nilaiAngka === n
+                                      ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                                      : "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-300")}>
+                                  {n}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex justify-between text-[8px] text-gray-300 dark:text-gray-600 uppercase tracking-wider px-1">
+                              <span>{LIKERT_LABELS[0]}</span><span>{LIKERT_LABELS[4]}</span>
+                            </div>
+                          </div>
+                        )}
+                        {p.jenis === "SKALA" && (
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-5 gap-1 sm:grid-cols-10">
+                              {Array.from({length:10},(_,i)=>i+1).map(n => (
+                                <button key={n} onClick={() => setJ(p.id, { nilaiAngka: n })}
+                                  className={cn("py-2 rounded-lg text-xs font-bold transition-all border",
+                                    val?.nilaiAngka === n
+                                      ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                                      : "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-300")}>
+                                  {n}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex justify-between text-[8px] text-gray-300 dark:text-gray-600 uppercase tracking-wider px-1">
+                              <span>Rendah</span><span>Tinggi</span>
+                            </div>
+                          </div>
+                        )}
+                        {p.jenis === "YA_TIDAK" && (
+                          <div className="flex gap-2">
+                            {[{label:"Ya",val:1},{label:"Tidak",val:0}].map(o => (
+                              <button key={o.label} onClick={() => setJ(p.id, { nilaiAngka: o.val })}
+                                className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border",
+                                  val?.nilaiAngka === o.val
+                                    ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                                    : "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-300")}>
+                                {o.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {p.jenis === "PILIHAN_GANDA" && (
+                          <div className="space-y-2">
+                            {p.opsi.map(o => (
+                              <button key={o.id} onClick={() => setJ(p.id, { nilaiOpsiId: o.id, nilaiAngka: o.nilai })}
+                                className={cn("w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all border flex items-center gap-2.5",
+                                  val?.nilaiOpsiId === o.id
+                                    ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-400 text-emerald-700 dark:text-emerald-300"
+                                    : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-emerald-300")}>
+                                <div className={cn("w-3.5 h-3.5 rounded-full border-2 shrink-0 flex items-center justify-center",
+                                  val?.nilaiOpsiId === o.id ? "border-emerald-500" : "border-gray-300 dark:border-gray-600")}>
+                                  {val?.nilaiOpsiId === o.id && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                                </div>
+                                {o.teks}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {p.jenis === "ESAI" && (
+                          <textarea
+                            value={val?.nilaiTeks || ""}
+                            onChange={e => setJ(p.id, { nilaiTeks: e.target.value })}
+                            rows={3}
+                            placeholder="Tuliskan jawaban Anda di sini..."
+                            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-emerald-400 transition-all resize-none text-gray-700 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+
+      {error && (
+        <div className="flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
+          <AlertCircle size={14} className="text-red-500 shrink-0" />
+          <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
+      <button
+        onClick={handleSubmit}
+        disabled={submitting}
+        className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-sm transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        {submitting ? <><Activity size={14} className="animate-spin" /> Mengirim...</> : <><Send size={14} /> Submit Kuesioner</>}
+      </button>
     </motion.div>
   );
 }
@@ -2476,6 +2806,7 @@ function AdminMonitor({ user }: { user: User }) {
           { id: "dashboard", label: "Overview", icon: Grid },
           { id: "siswa", label: "Siswa", icon: UserIcon },
           { id: "jurnal", label: "Semua Jurnal", icon: BookOpen },
+          { id: "kuesioner", label: "Kuesioner", icon: ClipboardList },
           { id: "logs", label: "Logs", icon: Activity },
         ].map(t => (
           <button
@@ -2712,6 +3043,12 @@ function AdminMonitor({ user }: { user: User }) {
           </motion.div>
         )}
 
+        {activeSubTab === "kuesioner" && (
+          <motion.div key="kuesioner" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminKuesionerPanel />
+          </motion.div>
+        )}
+
         {activeSubTab === "logs" && (
            <motion.div key="logs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
               <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
@@ -2789,6 +3126,549 @@ function StatCard({ label, value, unit, className }: any) {
       <div className="flex items-baseline gap-1.5 flex-wrap">
         <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight leading-none">{value}</div>
         {unit && <div className="text-[9px] sm:text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">{unit}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ===== ADMIN KUESIONER PANEL =====
+function AdminKuesionerPanel() {
+  const [list, setList] = useState<Kuesioner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Kuesioner | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [confirmData, setConfirmData] = useState<any>({ open: false });
+
+  const fetch = async () => {
+    setLoading(true);
+    try { setList(await apiFetch("/api/kuesioner")); }
+    catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetch(); }, []);
+
+  if (selected) return (
+    <AdminKuesionerDetail
+      kuesioner={selected}
+      onBack={() => { setSelected(null); fetch(); }}
+      onRefresh={fetch}
+    />
+  );
+
+  const STATUS_STYLE: Record<StatusKuesioner, string> = {
+    DRAFT: "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400",
+    AKTIF: "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400",
+    TUTUP: "bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400",
+  };
+
+  const toggleStatus = async (k: Kuesioner) => {
+    const next: Record<StatusKuesioner, StatusKuesioner> = { DRAFT: "AKTIF", AKTIF: "TUTUP", TUTUP: "AKTIF" };
+    try {
+      await apiFetch(`/api/kuesioner/${k.id}`, { method: "PATCH", body: JSON.stringify({ status: next[k.status] }) });
+      fetch();
+    } catch (e: any) { alert(e.message); }
+  };
+
+  const hapusKuesioner = (k: Kuesioner) => {
+    setConfirmData({
+      open: true, title: "Hapus Kuesioner",
+      message: `Hapus "${k.judul}" beserta semua data jawaban? Tindakan ini tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        await apiFetch(`/api/kuesioner/${k.id}`, { method: "DELETE" });
+        setConfirmData({ open: false }); fetch();
+      }
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-sm uppercase tracking-widest">Manajemen Kuesioner</h3>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{list.length} kuesioner terdaftar</p>
+        </div>
+        <button onClick={() => setShowCreate(true)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm">
+          <Plus size={12} /> Buat Kuesioner
+        </button>
+      </div>
+
+      {/* List */}
+      {loading ? (
+        <div className="py-16 flex items-center justify-center text-gray-300 dark:text-gray-600">
+          <Activity size={20} className="animate-spin text-emerald-500" />
+        </div>
+      ) : list.length === 0 ? (
+        <div className="py-16 flex flex-col items-center gap-3 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
+          <ClipboardList size={24} className="text-gray-200 dark:text-gray-700" />
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">Belum ada kuesioner. Buat yang pertama!</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {list.map(k => {
+            const totalPertanyaan = k.indikator.reduce((s, i) => s + i.pertanyaan.length, 0);
+            return (
+              <div key={k.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 shadow-sm hover:border-emerald-200 dark:hover:border-emerald-800 transition-all">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelected(k)}>
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span className={cn("text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full", STATUS_STYLE[k.status])}>
+                        {k.status}
+                      </span>
+                      <span className="text-[8px] text-gray-400 dark:text-gray-500 uppercase">{k.jenis}</span>
+                    </div>
+                    <h4 className="font-bold text-sm text-gray-800 dark:text-gray-100 mb-1">{k.judul}</h4>
+                    {k.deskripsi && <p className="text-[11px] text-gray-400 dark:text-gray-500 line-clamp-1">{k.deskripsi}</p>}
+                    <div className="flex items-center gap-3 mt-2 text-[9px] text-gray-400 dark:text-gray-500 flex-wrap">
+                      <span className="flex items-center gap-1"><ListChecks size={9} /> {k.indikator.length} Indikator</span>
+                      <span className="flex items-center gap-1"><FileQuestion size={9} /> {totalPertanyaan} Pertanyaan</span>
+                      <span className="flex items-center gap-1"><Users size={9} /> {k._count?.jawaban || 0} Responden</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => toggleStatus(k)}
+                      className={cn("p-1.5 rounded-lg transition-all text-xs",
+                        k.status === "AKTIF" ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800")}
+                      title={k.status === "AKTIF" ? "Tutup" : "Aktifkan"}>
+                      {k.status === "AKTIF" ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                    </button>
+                    <button onClick={() => setSelected(k)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-emerald-500 transition-all" title="Edit">
+                      <Pencil size={14} />
+                    </button>
+                    <button onClick={() => hapusKuesioner(k)} className="p-1.5 rounded-lg text-gray-300 dark:text-gray-600 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-500 transition-all" title="Hapus">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {showCreate && <CreateKuesionerModal onClose={() => setShowCreate(false)} onCreated={(k) => { setShowCreate(false); setSelected(k); fetch(); }} />}
+      <ConfirmModal open={confirmData.open} onClose={() => setConfirmData({ open: false })}
+        onConfirm={confirmData.onConfirm} title={confirmData.title} message={confirmData.message} confirmVariant="danger" />
+    </div>
+  );
+}
+
+// ===== CREATE KUESIONER MODAL =====
+function CreateKuesionerModal({ onClose, onCreated }: { onClose: () => void; onCreated: (k: Kuesioner) => void }) {
+  const [judul, setJudul] = useState("");
+  const [deskripsi, setDeskripsi] = useState("");
+  const [jenis, setJenis] = useState<JenisKuesioner>("UMUM");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  const JENIS_OPTIONS: { value: JenisKuesioner; label: string; desc: string }[] = [
+    { value: "UMUM", label: "Umum", desc: "Kuesioner bebas / asesmen umum" },
+    { value: "DCM", label: "DCM", desc: "Daftar Cek Masalah siswa" },
+    { value: "SOSIOMETRI", label: "Sosiometri", desc: "Pemetaan hubungan sosial" },
+    { value: "INVENTORI", label: "Inventori", desc: "Inventori minat atau kepribadian" },
+  ];
+
+  const submit = async () => {
+    if (!judul.trim()) { setErr("Judul wajib diisi"); return; }
+    setSaving(true);
+    try {
+      const k = await apiFetch("/api/kuesioner", { method: "POST", body: JSON.stringify({ judul, deskripsi, jenis }) });
+      onCreated(k);
+    } catch (e: any) { setErr(e.message); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
+        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-sm uppercase tracking-widest">Buat Kuesioner Baru</h3>
+          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"><X size={16} /></button>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold block mb-1">Jenis Kuesioner</label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {JENIS_OPTIONS.map(o => (
+                <button key={o.value} onClick={() => setJenis(o.value)}
+                  className={cn("p-2.5 rounded-xl text-left border transition-all",
+                    jenis === o.value ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-400 dark:border-emerald-600" : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-emerald-300")}>
+                  <p className={cn("text-[10px] font-bold uppercase tracking-wide", jenis === o.value ? "text-emerald-700 dark:text-emerald-300" : "text-gray-600 dark:text-gray-300")}>{o.label}</p>
+                  <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">{o.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold block mb-1">Judul Kuesioner <span className="text-red-400">*</span></label>
+            <input value={judul} onChange={e => setJudul(e.target.value)} placeholder="e.g., Asesmen Stres Akademik Semester 2"
+              className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-emerald-400 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500" />
+          </div>
+          <div>
+            <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold block mb-1">Deskripsi (Opsional)</label>
+            <textarea value={deskripsi} onChange={e => setDeskripsi(e.target.value)} rows={2}
+              placeholder="Petunjuk pengisian atau tujuan kuesioner..."
+              className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-emerald-400 resize-none text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500" />
+          </div>
+          {err && <p className="text-[10px] text-red-500 flex items-center gap-1"><AlertCircle size={10} /> {err}</p>}
+        </div>
+
+        <div className="flex gap-2 mt-4">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">Batal</button>
+          <button onClick={submit} disabled={saving}
+            className="flex-1 py-2.5 rounded-xl bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5">
+            {saving ? <Activity size={12} className="animate-spin" /> : <Plus size={12} />} Buat & Edit
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ===== ADMIN KUESIONER DETAIL (Edit Indikator & Pertanyaan) =====
+function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kuesioner; onBack: () => void; onRefresh: () => void }) {
+  const [k, setK] = useState<Kuesioner>(kuesioner);
+  const [showHasil, setShowHasil] = useState(false);
+  const [hasil, setHasil] = useState<any[]>([]);
+  const [loadingHasil, setLoadingHasil] = useState(false);
+  const [showAddIndikator, setShowAddIndikator] = useState(false);
+  const [newIndNama, setNewIndNama] = useState("");
+  const [newIndDesc, setNewIndDesc] = useState("");
+  const [expandedInd, setExpandedInd] = useState<string | null>(null);
+  const [showAddQ, setShowAddQ] = useState<string | null>(null); // indikatorId
+  const [savingInd, setSavingInd] = useState(false);
+  const [confirmData, setConfirmData] = useState<any>({ open: false });
+
+  const refresh = async () => {
+    try {
+      const list: Kuesioner[] = await apiFetch("/api/kuesioner");
+      const updated = list.find(x => x.id === k.id);
+      if (updated) setK(updated);
+    } catch (e) { console.error(e); }
+  };
+
+  const toggleStatus = async () => {
+    const next: Record<StatusKuesioner, StatusKuesioner> = { DRAFT: "AKTIF", AKTIF: "TUTUP", TUTUP: "AKTIF" };
+    try {
+      await apiFetch(`/api/kuesioner/${k.id}`, { method: "PATCH", body: JSON.stringify({ status: next[k.status] }) });
+      refresh();
+    } catch (e: any) { alert(e.message); }
+  };
+
+  const addIndikator = async () => {
+    if (!newIndNama.trim()) return;
+    setSavingInd(true);
+    try {
+      await apiFetch(`/api/kuesioner/${k.id}/indikator`, {
+        method: "POST", body: JSON.stringify({ nama: newIndNama, deskripsi: newIndDesc, urutan: k.indikator.length })
+      });
+      setNewIndNama(""); setNewIndDesc(""); setShowAddIndikator(false);
+      refresh();
+    } catch (e: any) { alert(e.message); }
+    finally { setSavingInd(false); }
+  };
+
+  const hapusIndikator = (ind: Indikator) => {
+    setConfirmData({
+      open: true, title: "Hapus Indikator",
+      message: `Hapus indikator "${ind.nama}" beserta semua pertanyaannya?`,
+      onConfirm: async () => {
+        await apiFetch(`/api/indikator/${ind.id}`, { method: "DELETE" });
+        setConfirmData({ open: false }); refresh();
+      }
+    });
+  };
+
+  const hapusPertanyaan = (p: Pertanyaan) => {
+    setConfirmData({
+      open: true, title: "Hapus Pertanyaan",
+      message: `Hapus pertanyaan ini?`,
+      onConfirm: async () => {
+        await apiFetch(`/api/pertanyaan/${p.id}`, { method: "DELETE" });
+        setConfirmData({ open: false }); refresh();
+      }
+    });
+  };
+
+  const loadHasil = async () => {
+    setLoadingHasil(true);
+    try { setHasil(await apiFetch(`/api/kuesioner/${k.id}/hasil`)); }
+    catch (e) { console.error(e); }
+    finally { setLoadingHasil(false); }
+  };
+
+  const STATUS_STYLE: Record<StatusKuesioner, string> = {
+    DRAFT: "bg-gray-100 dark:bg-gray-800 text-gray-500",
+    AKTIF: "bg-emerald-50 dark:bg-emerald-950 text-emerald-600",
+    TUTUP: "bg-red-50 dark:bg-red-950 text-red-500",
+  };
+  const JENIS_ICON: Record<JenisPertanyaan, React.ReactNode> = {
+    LIKERT: <Star size={10} />, SKALA: <SlidersHorizontal size={10} />,
+    PILIHAN_GANDA: <CheckSquare size={10} />, YA_TIDAK: <ToggleRight size={10} />, ESAI: <AlignLeft size={10} />
+  };
+  const JENIS_LABEL: Record<JenisPertanyaan, string> = {
+    LIKERT: "Likert 1-5", SKALA: "Skala 1-10", PILIHAN_GANDA: "Pilihan Ganda", YA_TIDAK: "Ya/Tidak", ESAI: "Esai"
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <button onClick={onBack} className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-emerald-600 transition-all shrink-0">
+          <ArrowLeft size={16} />
+        </button>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className={cn("text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full", STATUS_STYLE[k.status])}>{k.status}</span>
+            <span className="text-[8px] text-gray-400 dark:text-gray-500 uppercase">{k.jenis}</span>
+          </div>
+          <h3 className="font-bold text-base sm:text-lg text-gray-800 dark:text-gray-100">{k.judul}</h3>
+          {k.deskripsi && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{k.deskripsi}</p>}
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button onClick={toggleStatus}
+            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all border",
+              k.status === "AKTIF" ? "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800 text-red-500" : "bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800 text-emerald-600")}>
+            {k.status === "AKTIF" ? <><ToggleLeft size={12} /> Tutup</> : <><ToggleRight size={12} /> Aktifkan</>}
+          </button>
+          <button onClick={() => { setShowHasil(!showHasil); if (!showHasil) loadHasil(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-emerald-300 transition-all">
+            <BarChart2 size={12} /> Hasil
+          </button>
+        </div>
+      </div>
+
+      {/* Hasil Section */}
+      {showHasil && (
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <h4 className="font-bold text-xs uppercase tracking-widest">Hasil Jawaban Siswa</h4>
+            <span className="text-[9px] text-gray-400 dark:text-gray-500">{hasil.length} responden</span>
+          </div>
+          {loadingHasil ? (
+            <div className="py-8 flex items-center justify-center"><Activity size={18} className="animate-spin text-emerald-500" /></div>
+          ) : hasil.length === 0 ? (
+            <div className="py-8 text-center text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Belum ada yang mengisi</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                  <tr>
+                    <th className="px-4 py-3">Siswa</th>
+                    <th className="px-4 py-3">NIS</th>
+                    <th className="px-4 py-3">Waktu Submit</th>
+                    <th className="px-4 py-3">Jawaban</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {hasil.map((h: any) => (
+                    <tr key={h.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-4 py-3 font-bold text-gray-800 dark:text-gray-100">{h.user.name}</td>
+                      <td className="px-4 py-3 font-mono text-gray-500 dark:text-gray-400">{h.user.nis}</td>
+                      <td className="px-4 py-3 text-gray-400 dark:text-gray-500 text-[10px]">{new Date(h.submittedAt).toLocaleString("id-ID")}</td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-[10px]">{h.detail.length} jawaban</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Indikator List */}
+      <div className="space-y-3">
+        {k.indikator.length === 0 && !showAddIndikator && (
+          <div className="py-10 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
+            <ListChecks size={20} className="mx-auto mb-2 text-gray-200 dark:text-gray-700" />
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">Tambah indikator pertama untuk mulai</p>
+          </div>
+        )}
+        {k.indikator.map((ind, iIdx) => (
+          <div key={ind.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+            {/* Indikator header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => setExpandedInd(expandedInd === ind.id ? null : ind.id)}>
+              <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-[9px] text-white font-bold shrink-0">{iIdx + 1}</div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-xs text-gray-800 dark:text-gray-100">{ind.nama}</p>
+                {ind.deskripsi && <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">{ind.deskripsi}</p>}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[9px] text-gray-400 dark:text-gray-500">{ind.pertanyaan.length} pertanyaan</span>
+                <button onClick={e => { e.stopPropagation(); hapusIndikator(ind); }} className="p-1 rounded text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all">
+                  <Trash2 size={12} />
+                </button>
+                {expandedInd === ind.id ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+              </div>
+            </div>
+
+            {/* Pertanyaan list */}
+            {expandedInd === ind.id && (
+              <div>
+                {ind.pertanyaan.length === 0 && (
+                  <div className="px-4 py-5 text-center text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Belum ada pertanyaan</div>
+                )}
+                {ind.pertanyaan.map((p, pIdx) => (
+                  <div key={p.id} className="flex items-start gap-3 px-4 py-3 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <span className="text-[9px] text-gray-300 dark:text-gray-600 font-mono mt-0.5 w-5 shrink-0">{pIdx + 1}.</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-700 dark:text-gray-200 leading-relaxed">{p.teks}</p>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                          {JENIS_ICON[p.jenis]} {JENIS_LABEL[p.jenis]}
+                        </span>
+                        {!p.wajib && <span className="text-[8px] text-gray-300 dark:text-gray-600 uppercase">Opsional</span>}
+                        {p.opsi.length > 0 && <span className="text-[8px] text-gray-400 dark:text-gray-500">{p.opsi.length} opsi</span>}
+                      </div>
+                    </div>
+                    <button onClick={() => hapusPertanyaan(p)} className="p-1 rounded text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all shrink-0">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                ))}
+
+                {/* Add Pertanyaan form inline */}
+                {showAddQ === ind.id ? (
+                  <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-800">
+                    <AddPertanyaanForm
+                      indikatorId={ind.id}
+                      onSaved={() => { setShowAddQ(null); refresh(); }}
+                      onCancel={() => setShowAddQ(null)}
+                    />
+                  </div>
+                ) : (
+                  <button onClick={() => setShowAddQ(ind.id)}
+                    className="w-full flex items-center justify-center gap-1.5 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-all border-t border-gray-50 dark:border-gray-800">
+                    <Plus size={11} /> Tambah Pertanyaan
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Add Indikator */}
+      {showAddIndikator ? (
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm space-y-2.5">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Indikator Baru</p>
+          <input value={newIndNama} onChange={e => setNewIndNama(e.target.value)} placeholder="Nama Indikator (e.g., Stres Akademik)"
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-emerald-400 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500" />
+          <input value={newIndDesc} onChange={e => setNewIndDesc(e.target.value)} placeholder="Deskripsi (opsional)"
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-emerald-400 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500" />
+          <div className="flex gap-2">
+            <button onClick={() => setShowAddIndikator(false)} className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-[9px] font-bold uppercase text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">Batal</button>
+            <button onClick={addIndikator} disabled={savingInd || !newIndNama.trim()}
+              className="flex-1 py-2 rounded-xl bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center justify-center gap-1">
+              {savingInd ? <Activity size={11} className="animate-spin" /> : <Check size={11} />} Simpan
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setShowAddIndikator(true)}
+          className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-500 transition-all flex items-center justify-center gap-1.5">
+          <Plus size={13} /> Tambah Indikator
+        </button>
+      )}
+
+      <ConfirmModal open={confirmData.open} onClose={() => setConfirmData({ open: false })}
+        onConfirm={confirmData.onConfirm} title={confirmData.title} message={confirmData.message} confirmVariant="danger" />
+    </div>
+  );
+}
+
+// ===== ADD PERTANYAAN FORM =====
+function AddPertanyaanForm({ indikatorId, onSaved, onCancel }: { indikatorId: string; onSaved: () => void; onCancel: () => void }) {
+  const [teks, setTeks] = useState("");
+  const [jenis, setJenis] = useState<JenisPertanyaan>("LIKERT");
+  const [wajib, setWajib] = useState(true);
+  const [opsi, setOpsi] = useState([{ teks: "", nilai: 1 }, { teks: "", nilai: 2 }]);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  const needsOpsi = jenis === "PILIHAN_GANDA";
+
+  const addOpsi = () => setOpsi([...opsi, { teks: "", nilai: opsi.length + 1 }]);
+  const removeOpsi = (i: number) => setOpsi(opsi.filter((_, idx) => idx !== i));
+  const updateOpsi = (i: number, teks: string) => setOpsi(opsi.map((o, idx) => idx === i ? { ...o, teks } : o));
+
+  const JENIS_OPTIONS: { value: JenisPertanyaan; label: string; icon: React.ReactNode }[] = [
+    { value: "LIKERT", label: "Likert 1-5", icon: <Star size={11} /> },
+    { value: "SKALA", label: "Skala 1-10", icon: <SlidersHorizontal size={11} /> },
+    { value: "PILIHAN_GANDA", label: "Pilihan Ganda", icon: <CheckSquare size={11} /> },
+    { value: "YA_TIDAK", label: "Ya / Tidak", icon: <ToggleRight size={11} /> },
+    { value: "ESAI", label: "Esai", icon: <AlignLeft size={11} /> },
+  ];
+
+  const submit = async () => {
+    if (!teks.trim()) { setErr("Teks pertanyaan wajib diisi"); return; }
+    if (needsOpsi && opsi.some(o => !o.teks.trim())) { setErr("Semua opsi harus diisi"); return; }
+    setSaving(true);
+    try {
+      await apiFetch(`/api/indikator/${indikatorId}/pertanyaan`, {
+        method: "POST",
+        body: JSON.stringify({ teks, jenis, wajib, urutan: 0, opsi: needsOpsi ? opsi : [] })
+      });
+      onSaved();
+    } catch (e: any) { setErr(e.message); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="text-[8px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold block mb-1">Jenis Pertanyaan</label>
+        <div className="flex flex-wrap gap-1.5">
+          {JENIS_OPTIONS.map(o => (
+            <button key={o.value} onClick={() => setJenis(o.value)}
+              className={cn("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wide border transition-all",
+                jenis === o.value ? "bg-emerald-500 text-white border-emerald-500" : "bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-300")}>
+              {o.icon} {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <label className="text-[8px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold block mb-1">Teks Pertanyaan <span className="text-red-400">*</span></label>
+        <textarea value={teks} onChange={e => setTeks(e.target.value)} rows={2}
+          placeholder="Tuliskan pertanyaan di sini..."
+          className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-emerald-400 resize-none text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500" />
+      </div>
+      {needsOpsi && (
+        <div className="space-y-1.5">
+          <label className="text-[8px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold block">Opsi Jawaban</label>
+          {opsi.map((o, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[9px] text-gray-400 dark:text-gray-500 w-4 font-mono">{String.fromCharCode(65 + i)}.</span>
+              <input value={o.teks} onChange={e => updateOpsi(i, e.target.value)}
+                placeholder={`Opsi ${String.fromCharCode(65 + i)}`}
+                className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-emerald-400 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500" />
+              {opsi.length > 2 && (
+                <button onClick={() => removeOpsi(i)} className="p-1 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-all"><X size={12} /></button>
+              )}
+            </div>
+          ))}
+          <button onClick={addOpsi} className="flex items-center gap-1 text-[9px] text-emerald-500 hover:text-emerald-600 font-bold uppercase tracking-wide mt-1">
+            <Plus size={10} /> Tambah Opsi
+          </button>
+        </div>
+      )}
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" checked={wajib} onChange={e => setWajib(e.target.checked)} className="rounded accent-emerald-500" />
+        <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold">Wajib Diisi</span>
+      </label>
+      {err && <p className="text-[10px] text-red-500 flex items-center gap-1"><AlertCircle size={10} /> {err}</p>}
+      <div className="flex gap-2">
+        <button onClick={onCancel} className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-[9px] font-bold uppercase text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">Batal</button>
+        <button onClick={submit} disabled={saving}
+          className="flex-1 py-2 rounded-xl bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center justify-center gap-1">
+          {saving ? <Activity size={11} className="animate-spin" /> : <Save size={11} />} Simpan
+        </button>
       </div>
     </div>
   );

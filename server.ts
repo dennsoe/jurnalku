@@ -594,6 +594,259 @@ async function startServer() {
     }
   });
 
+  // ===== KUESIONER API =====
+
+  // Helper: pastikan admin
+  const requireAdmin = async (authHeader: string | undefined, res: any): Promise<any | null> => {
+    if (!authHeader) { res.status(401).json({ error: "Unauthorized" }); return null; }
+    try {
+      const decoded: any = jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
+      const user = await prisma.user.findUnique({ where: { id: decoded.id }, select: { id: true, role: true } });
+      if (user?.role !== "ADMIN") { res.status(403).json({ error: "Forbidden" }); return null; }
+      return decoded;
+    } catch { res.status(401).json({ error: "Invalid token" }); return null; }
+  };
+
+  // Helper: pastikan authenticated (siapapun)
+  const requireAuth = (authHeader: string | undefined, res: any): any | null => {
+    if (!authHeader) { res.status(401).json({ error: "Unauthorized" }); return null; }
+    try {
+      return jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
+    } catch { res.status(401).json({ error: "Invalid token" }); return null; }
+  };
+
+  // GET /api/kuesioner — admin: semua, siswa: hanya yang AKTIF + belum dijawab & sudah dijawab
+  app.get("/api/kuesioner", async (req, res) => {
+    const decoded = requireAuth(req.headers.authorization, res);
+    if (!decoded) return;
+    try {
+      const user = await prisma.user.findUnique({ where: { id: decoded.id }, select: { role: true } });
+      if (user?.role === "ADMIN") {
+        const list = await prisma.kuesioner.findMany({
+          orderBy: { createdAt: "desc" },
+          include: {
+            indikator: { include: { pertanyaan: true } },
+            _count: { select: { jawaban: true } },
+          }
+        });
+        return res.json(list);
+      }
+      // Siswa: semua kuesioner AKTIF
+      const list = await prisma.kuesioner.findMany({
+        where: { status: "AKTIF" },
+        orderBy: { createdAt: "desc" },
+        include: {
+          indikator: {
+            orderBy: { urutan: "asc" },
+            include: {
+              pertanyaan: {
+                orderBy: { urutan: "asc" },
+                include: { opsi: { orderBy: { urutan: "asc" } } }
+              }
+            }
+          },
+          jawaban: { where: { userId: decoded.id }, select: { id: true, submittedAt: true } }
+        }
+      });
+      res.json(list);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/kuesioner — admin: buat kuesioner baru
+  app.post("/api/kuesioner", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { judul, deskripsi, jenis } = req.body;
+    if (!judul?.trim()) return res.status(400).json({ error: "Judul wajib diisi" });
+    try {
+      const k = await prisma.kuesioner.create({
+        data: { judul, deskripsi: deskripsi || null, jenis: jenis || "UMUM", createdById: decoded.id }
+      });
+      await createAuditLog(decoded.id, "CREATE_KUESIONER", `Created kuesioner: ${judul}`);
+      res.json(k);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // PATCH /api/kuesioner/:id — update judul/deskripsi/jenis/status
+  app.patch("/api/kuesioner/:id", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id } = req.params;
+    const { judul, deskripsi, jenis, status } = req.body;
+    try {
+      const k = await prisma.kuesioner.update({
+        where: { id },
+        data: { 
+          ...(judul !== undefined && { judul }),
+          ...(deskripsi !== undefined && { deskripsi }),
+          ...(jenis !== undefined && { jenis }),
+          ...(status !== undefined && { status }),
+        }
+      });
+      await createAuditLog(decoded.id, "UPDATE_KUESIONER", `Updated kuesioner: ${id} status=${status || '-'}`);
+      res.json(k);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // DELETE /api/kuesioner/:id — hapus kuesioner + cascade
+  app.delete("/api/kuesioner/:id", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id } = req.params;
+    try {
+      await prisma.kuesioner.delete({ where: { id } });
+      await createAuditLog(decoded.id, "DELETE_KUESIONER", `Deleted kuesioner: ${id}`);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/kuesioner/:id/indikator — tambah indikator
+  app.post("/api/kuesioner/:id/indikator", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id: kuesionerId } = req.params;
+    const { nama, deskripsi, urutan } = req.body;
+    if (!nama?.trim()) return res.status(400).json({ error: "Nama indikator wajib diisi" });
+    try {
+      const ind = await prisma.indikator.create({
+        data: { nama, deskripsi: deskripsi || null, urutan: urutan || 0, kuesionerId }
+      });
+      res.json(ind);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // DELETE /api/indikator/:id
+  app.delete("/api/indikator/:id", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id } = req.params;
+    try {
+      await prisma.indikator.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/indikator/:id/pertanyaan — tambah pertanyaan ke indikator
+  app.post("/api/indikator/:id/pertanyaan", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id: indikatorId } = req.params;
+    const { teks, jenis, urutan, wajib, opsi } = req.body;
+    if (!teks?.trim()) return res.status(400).json({ error: "Teks pertanyaan wajib diisi" });
+    try {
+      const p = await prisma.pertanyaan.create({
+        data: {
+          teks,
+          jenis: jenis || "LIKERT",
+          urutan: urutan || 0,
+          wajib: wajib !== false,
+          indikatorId,
+          ...(opsi && opsi.length > 0 && {
+            opsi: {
+              create: opsi.map((o: any, i: number) => ({
+                teks: o.teks,
+                nilai: o.nilai || i,
+                urutan: i
+              }))
+            }
+          })
+        },
+        include: { opsi: { orderBy: { urutan: "asc" } } }
+      });
+      res.json(p);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // DELETE /api/pertanyaan/:id
+  app.delete("/api/pertanyaan/:id", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id } = req.params;
+    try {
+      await prisma.pertanyaan.delete({ where: { id } });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/kuesioner/:id/jawab — siswa submit jawaban
+  app.post("/api/kuesioner/:id/jawab", async (req, res) => {
+    const decoded = requireAuth(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id: kuesionerId } = req.params;
+    const { jawaban } = req.body; // [{pertanyaanId, nilaiTeks?, nilaiAngka?, nilaiOpsiId?}]
+    if (!jawaban || !Array.isArray(jawaban)) return res.status(400).json({ error: "Jawaban tidak valid" });
+    try {
+      // Cek kuesioner aktif
+      const k = await prisma.kuesioner.findUnique({ where: { id: kuesionerId }, select: { status: true } });
+      if (!k) return res.status(404).json({ error: "Kuesioner tidak ditemukan" });
+      if (k.status !== "AKTIF") return res.status(400).json({ error: "Kuesioner tidak aktif" });
+      // Cek sudah pernah jawab
+      const existing = await prisma.jawabanKuesioner.findUnique({
+        where: { kuesionerId_userId: { kuesionerId, userId: decoded.id } }
+      });
+      if (existing) return res.status(400).json({ error: "Anda sudah mengisi kuesioner ini" });
+
+      const result = await prisma.jawabanKuesioner.create({
+        data: {
+          kuesionerId,
+          userId: decoded.id,
+          detail: {
+            create: jawaban.map((j: any) => ({
+              pertanyaanId: j.pertanyaanId,
+              nilaiTeks: j.nilaiTeks || null,
+              nilaiAngka: j.nilaiAngka !== undefined ? j.nilaiAngka : null,
+              nilaiOpsiId: j.nilaiOpsiId || null,
+            }))
+          }
+        }
+      });
+      await createAuditLog(decoded.id, "SUBMIT_KUESIONER", `Submitted kuesioner: ${kuesionerId}`);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /api/kuesioner/:id/hasil — admin lihat hasil per-siswa
+  app.get("/api/kuesioner/:id/hasil", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    const { id: kuesionerId } = req.params;
+    try {
+      const hasil = await prisma.jawabanKuesioner.findMany({
+        where: { kuesionerId },
+        include: {
+          user: { select: { id: true, name: true, nis: true } },
+          detail: {
+            include: {
+              pertanyaan: { select: { id: true, teks: true, jenis: true, indikatorId: true } }
+            }
+          }
+        },
+        orderBy: { submittedAt: "desc" }
+      });
+      res.json(hasil);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // --- VITE MIDDLEWARE ---
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
