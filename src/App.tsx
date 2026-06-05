@@ -31,6 +31,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  ClipboardList,
+  Lock,
 } from "lucide-react";
 import { 
   BarChart, 
@@ -150,6 +152,7 @@ interface Entry {
   ref3?: string;
   createdAt: string;
   viewCount: number;
+  userId: string;
   reactions: Reaction[];
   user?: {
     id: string;
@@ -237,7 +240,7 @@ export default function App() {
       <main className="max-w-2xl mx-auto p-4 sm:p-5 mb-20 min-h-[calc(100vh-140px)]">
         <AnimatePresence mode="wait">
           {activeTab === "home" && <StudentDashboard user={user} key="home" />}
-          {activeTab === "feed" && <FeedPage user={user} key="feed" />}
+          {activeTab === "intervensi" && <IntervensiPage user={user} key="intervensi" />}
           {activeTab === "write" && <WritePage user={user} key="write" onSave={() => setActiveTab("home")} />}
           {activeTab === "history" && <HistoryPage user={user} key="history" />}
           {activeTab === "grafik" && <GrafikPage user={user} key="grafik" />}
@@ -250,7 +253,7 @@ export default function App() {
       <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 z-50 pointer-events-none">
         <div className="max-w-md mx-auto bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border border-gray-200 dark:border-gray-700 rounded-2xl p-1.5 flex justify-around items-center shadow-2xl shadow-gray-200/80 dark:shadow-gray-950 pointer-events-auto">
           <NavButton active={activeTab === "home"} onClick={() => setActiveTab("home")} icon={<BookOpen size={18} />} label="Home" />
-          <NavButton active={activeTab === "feed"} onClick={() => setActiveTab("feed")} icon={<Grid size={18} />} label="Feed" />
+          <NavButton active={activeTab === "intervensi"} onClick={() => setActiveTab("intervensi")} icon={<ClipboardList size={18} />} label="Intervensi" />
           <NavButton active={activeTab === "history"} onClick={() => setActiveTab("history")} icon={<History size={18} />} label="Riwayat" />
           <NavButton active={activeTab === "grafik"} onClick={() => setActiveTab("grafik")} icon={<BarChart3 size={18} />} label="Grafik" />
           {user.role === "ADMIN" && (
@@ -514,74 +517,35 @@ function ReactionButton({ type, emoji, count, active, disabled, onClick }: { typ
   );
 }
 
-function FeedPage({ user }: { user: User }) {
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const fetchFeed = async () => {
-    setLoading(true);
-    try {
-      const data = await apiFetch("/api/feed");
-      setEntries(data);
-    } catch (err) {
-      console.error("Feed error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFeed();
-  }, []);
-
-  const filtered = entries.filter(e => 
-    e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.user?.nis.includes(searchTerm)
-  );
-
+function IntervensiPage({ user }: { user: User }) {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Feed Publik</h2>
-          <p className="text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] font-bold mt-1">
-            Inspirasi & Refleksi dari Teman
-          </p>
-        </div>
-        <div className="relative group w-full sm:max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 group-focus-within:text-[#10b981] transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Cari Jurnal/Siswa..." 
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-mono shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-          />
-        </div>
+      <div>
+        <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Intervensi</h2>
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mt-1">
+          Program & Kuesioner dari Guru BK
+        </p>
       </div>
 
-      {loading ? (
-        <div className="py-20 flex flex-col items-center gap-4 text-gray-200 dark:text-gray-700 uppercase tracking-widest font-bold text-[10px]">
-          <Activity size={24} className="animate-spin text-[#10b981]" />
-          <span>Mencari Inspirasi...</span>
+      {/* Placeholder — fitur akan ditambahkan oleh admin */}
+      <div className="flex flex-col items-center justify-center py-24 gap-5 border border-dashed border-gray-200 dark:border-gray-700 rounded-3xl bg-gray-50 dark:bg-gray-900/50">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 flex items-center justify-center">
+          <ClipboardList size={28} className="text-emerald-500" />
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="py-20 text-center bg-gray-50 dark:bg-gray-900/50 border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
-          <Zap size={24} className="mx-auto mb-3 text-gray-100" />
-          <p className="text-xs text-gray-300 dark:text-gray-600 uppercase tracking-widest font-bold">Belum ada jurnal publik tersedia.</p>
+        <div className="text-center">
+          <p className="font-bold text-sm text-gray-700 dark:text-gray-200 mb-1">Belum Ada Program Aktif</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest max-w-xs mx-auto leading-relaxed">
+            Kuesioner dan program intervensi dari Guru BK akan muncul di sini
+          </p>
         </div>
-      ) : (
-        <div className="grid gap-3">
-          {filtered.map(entry => (
-            <EntryCard key={entry.id} entry={entry} onUpdate={fetchFeed} />
-          ))}
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900">
+          <Lock size={10} className="text-emerald-500" />
+          <span className="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase tracking-widest font-bold">Dikelola oleh Admin</span>
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }
@@ -810,6 +774,10 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
   const [editedRef3, setEditedRef3] = useState(entry.ref3 || "");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{title?: string, body?: string}>({});
+
+  // Tentukan apakah user ini adalah pemilik jurnal atau admin
+  const currentSessionUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const isOwner = currentSessionUser.id === entry.userId || currentSessionUser.role === "ADMIN";
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [reactions, setReactions] = useState<Reaction[]>(entry.reactions || []);
@@ -851,9 +819,9 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
   }, [open, isEditing]);
 
   const addReaction = async (type: string) => {
-    // If already reacted to anything, block it
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    if (reactions.some(r => r.userId === currentUser.id)) return;
+    // Hanya pemilik jurnal atau admin
+    if (!isOwner) return;
+    if (reactions.some(r => r.userId === currentSessionUser.id)) return;
 
     try {
       await apiFetch(`/api/journals/${entry.id}/reactions`, {
@@ -861,10 +829,9 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
         body: JSON.stringify({ type })
       });
       
-      setReactions([...reactions, { id: "temp", type, userId: currentUser.id, entryId: entry.id }]);
+      setReactions([...reactions, { id: "temp", type, userId: currentSessionUser.id, entryId: entry.id }]);
     } catch (err: any) {
       console.error("Reaction error:", err);
-      // alert(err.message); // Server returns 400 if already reacted
     }
   };
 
@@ -1099,24 +1066,30 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                   </div>
 
                   <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                     {REACTION_TYPES.map(rt => {
-                       const count = reactions.filter(r => r.type === rt.type).length;
-                       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-                       const active = reactions.some(r => r.type === rt.type && r.userId === currentUser.id);
-                       const hasReacted = reactions.some(r => r.userId === currentUser.id);
+                     {isOwner ? (
+                       REACTION_TYPES.map(rt => {
+                         const count = reactions.filter(r => r.type === rt.type).length;
+                         const active = reactions.some(r => r.type === rt.type && r.userId === currentSessionUser.id);
+                         const hasReacted = reactions.some(r => r.userId === currentSessionUser.id);
 
-                       return (
-                         <ReactionButton 
-                           key={rt.type}
-                           type={rt.type} 
-                           emoji={rt.emoji} 
-                           count={count} 
-                           active={active}
-                           disabled={hasReacted}
-                           onClick={() => addReaction(rt.type)} 
-                         />
-                       );
-                     })}
+                         return (
+                           <ReactionButton 
+                             key={rt.type}
+                             type={rt.type} 
+                             emoji={rt.emoji} 
+                             count={count} 
+                             active={active}
+                             disabled={hasReacted}
+                             onClick={() => addReaction(rt.type)} 
+                           />
+                         );
+                       })
+                     ) : (
+                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                         <Lock size={10} className="text-gray-300 dark:text-gray-600" />
+                         <span className="text-[9px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Reaksi hanya untuk pemilik</span>
+                       </div>
+                     )}
                   </div>
 
                   <div className="text-gray-700 dark:text-gray-200 leading-relaxed text-sm whitespace-pre-wrap py-2">
@@ -1146,6 +1119,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                 onCommentAdded={fetchComments}
                 onCommentDeleted={fetchComments}
                 loading={loadingComments}
+                canInteract={isOwner}
               />
             )}
           </motion.div>
@@ -1172,12 +1146,13 @@ function RefBox({ label, text }: { label: string, text: string }) {
   );
 }
 
-function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, loading }: { 
+function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, loading, canInteract = true }: { 
   entryId: string, 
   comments: Comment[], 
   onCommentAdded: () => void,
   onCommentDeleted: () => void,
-  loading: boolean
+  loading: boolean,
+  canInteract?: boolean
 }) {
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -1282,18 +1257,27 @@ function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, l
       </div>
 
       <form onSubmit={handlePostComment} className="flex gap-2">
-        <input 
-          value={newComment}
-          onChange={e => setNewComment(e.target.value)}
-          placeholder="Tinggalkan pesan penyemangat..."
-          className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl px-3 py-2 text-xs outline-none focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
-        />
-        <button 
-          disabled={submitting || !newComment.trim()}
-          className="w-10 h-10 bg-[#10b981] flex items-center justify-center rounded-xl text-white disabled:opacity-30 transition-all active:scale-95"
-        >
-          {submitting ? <Activity size={14} className="animate-spin" /> : <Send size={14} />}
-        </button>
+        {canInteract ? (
+          <>
+            <input 
+              value={newComment}
+              onChange={e => setNewComment(e.target.value)}
+              placeholder="Tinggalkan catatan atau refleksi..."
+              className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl px-3 py-2 text-xs outline-none focus:border-emerald-400 dark:focus:border-emerald-500 transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            />
+            <button 
+              disabled={submitting || !newComment.trim()}
+              className="w-10 h-10 bg-[#10b981] flex items-center justify-center rounded-xl text-white disabled:opacity-30 transition-all active:scale-95"
+            >
+              {submitting ? <Activity size={14} className="animate-spin" /> : <Send size={14} />}
+            </button>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
+            <Lock size={10} className="text-gray-300 dark:text-gray-600 shrink-0" />
+            <span className="text-[9px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Komentar hanya untuk pemilik jurnal</span>
+          </div>
+        )}
       </form>
       <ConfirmModal 
         open={confirmData.open}

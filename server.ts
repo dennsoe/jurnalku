@@ -312,6 +312,14 @@ async function startServer() {
 
     try {
       const decoded: any = jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
+
+      // Hanya pemilik jurnal atau admin yang boleh komentar
+      const entry = await prisma.entry.findUnique({ where: { id: entryId }, select: { userId: true } });
+      if (!entry) return res.status(404).json({ error: "Jurnal tidak ditemukan" });
+      const commenter = await prisma.user.findUnique({ where: { id: decoded.id }, select: { role: true } });
+      if (entry.userId !== decoded.id && commenter?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Hanya pemilik jurnal atau admin yang dapat berkomentar." });
+      }
       
       const comment = await prisma.comment.create({
         data: {
@@ -334,17 +342,27 @@ async function startServer() {
     }
   });
 
-  // Comments: Get comments for entry
+  // Comments: Get comments for entry (hanya pemilik atau admin)
   app.get("/api/journals/:id/comments", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Unauthorized" });
     const { id: entryId } = req.params;
 
     try {
+      const decoded: any = jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
+      const entry = await prisma.entry.findUnique({ where: { id: entryId }, select: { userId: true } });
+      if (!entry) return res.status(404).json({ error: "Jurnal tidak ditemukan" });
+      const requester = await prisma.user.findUnique({ where: { id: decoded.id }, select: { role: true } });
+      if (entry.userId !== decoded.id && requester?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Akses ditolak." });
+      }
+
       const comments = await prisma.comment.findMany({
         where: { entryId },
         orderBy: { createdAt: "asc" },
         include: {
           user: {
-            select: { name: true, role: true }
+            select: { name: true, role: true, id: true }
           }
         }
       });
@@ -383,13 +401,18 @@ async function startServer() {
   });
 
   // Feed: Get all public entries
+  // Feed: Admin-only — siswa tidak dapat mengakses jurnal milik siswa lain
   app.get("/api/feed", async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: "Unauthorized" });
 
     try {
-      jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
-      
+      const decoded: any = jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
+      const requester = await prisma.user.findUnique({ where: { id: decoded.id }, select: { role: true } });
+      if (requester?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Hanya admin yang dapat mengakses feed." });
+      }
+
       const entries = await prisma.entry.findMany({
         orderBy: { createdAt: "desc" },
         include: {
@@ -408,21 +431,30 @@ async function startServer() {
     }
   });
 
-  // Journals: Increment view count
+  // Journals: Increment view count (hanya pemilik atau admin)
   app.post("/api/journals/:id/view", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Unauthorized" });
     const { id } = req.params;
     try {
-      const entry = await prisma.entry.update({
+      const decoded: any = jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
+      const entry = await prisma.entry.findUnique({ where: { id }, select: { userId: true } });
+      if (!entry) return res.status(404).json({ error: "Not found" });
+      const viewer = await prisma.user.findUnique({ where: { id: decoded.id }, select: { role: true } });
+      if (entry.userId !== decoded.id && viewer?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Akses ditolak." });
+      }
+      const updated = await prisma.entry.update({
         where: { id },
         data: { viewCount: { increment: 1 } }
       });
-      res.json({ viewCount: entry.viewCount });
+      res.json({ viewCount: updated.viewCount });
     } catch (err) {
       res.status(500).json({ error: "Failed to increment view count" });
     }
   });
 
-  // Reactions: Post reaction (cannot toggle/remove/change)
+  // Reactions: Post reaction (hanya pemilik jurnal atau admin)
   app.post("/api/journals/:id/reactions", async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: "Unauthorized" });
@@ -432,6 +464,14 @@ async function startServer() {
 
     try {
       const decoded: any = jwt.verify(authHeader.split(" ")[1], JWT_SECRET);
+
+      // Hanya pemilik jurnal atau admin yang boleh react
+      const entry = await prisma.entry.findUnique({ where: { id: entryId }, select: { userId: true } });
+      if (!entry) return res.status(404).json({ error: "Jurnal tidak ditemukan" });
+      const reactor = await prisma.user.findUnique({ where: { id: decoded.id }, select: { role: true } });
+      if (entry.userId !== decoded.id && reactor?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Hanya pemilik jurnal atau admin yang dapat memberikan reaksi." });
+      }
       
       const existing = await prisma.reaction.findUnique({
         where: {
