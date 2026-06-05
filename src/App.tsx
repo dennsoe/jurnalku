@@ -378,18 +378,18 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
         layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-75 bg-white border border-gray-200 rounded-2xl p-5 relative z-10 shadow-xl shadow-emerald-100/60"
+        className="w-full max-w-75 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 relative z-10 shadow-xl shadow-emerald-100/60 dark:shadow-gray-950"
       >
         <div className="mb-5 text-center">
           <h1 className="font-serif text-xl font-bold text-[#10b981] mb-0.5">Jurnal Self Acceptance</h1>
-          <p className="text-gray-500 text-[9px] tracking-[0.2em] uppercase">
+          <p className="text-gray-500 dark:text-gray-400 text-[9px] tracking-[0.2em] uppercase">
             {isRegister ? "Registrasi Akun" : "Self Acceptance Portal SMK"}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1.5">
-            <label className="text-[9px] text-gray-500 uppercase tracking-widest ml-1">Nomor Induk Siswa</label>
+            <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">Nomor Induk Siswa</label>
             <input 
               value={nis} 
               onChange={e => {
@@ -407,7 +407,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
 
           {isRegister && (
             <div className="space-y-1.5">
-              <label className="text-[9px] text-gray-500 uppercase tracking-widest ml-1">Nama Lengkap</label>
+              <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
               <input 
                 value={name} 
                 onChange={e => setName(e.target.value)}
@@ -422,7 +422,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[9px] text-gray-500 uppercase tracking-widest ml-1">Passphrase</label>
+            <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">Passphrase</label>
             <input 
               type="password"
               value={password} 
@@ -468,7 +468,7 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
           </button>
         </div>
         
-        <p className="text-center text-[10px] text-gray-300 mt-8 leading-relaxed">
+        <p className="text-center text-[10px] text-gray-300 dark:text-gray-600 mt-8 leading-relaxed">
           Sistem Terenkripsi & Diaudit Secara Real-time.<br/>
           Gunakan kredensial yang diberikan oleh operator sekolah.
         </p>
@@ -498,8 +498,8 @@ function ReactionButton({ type, emoji, count, active, disabled, onClick }: { typ
         active 
           ? "bg-emerald-50 border-emerald-400 text-emerald-600 scale-105 shadow-sm" 
           : disabled 
-            ? "bg-gray-50 border-gray-100 text-gray-300 opacity-60 cursor-not-allowed"
-            : "bg-white border-gray-200 text-gray-500 hover:border-emerald-200 hover:text-emerald-600 active:scale-95 cursor-pointer shadow-sm"
+            ? "bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 opacity-60 cursor-not-allowed"
+            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-emerald-200 hover:text-emerald-600 active:scale-95 cursor-pointer shadow-sm"
       )}
     >
       <span className={cn("transition-transform", !disabled && !active && "group-hover:scale-120")}>{emoji}</span>
@@ -549,31 +549,31 @@ function FeedPage({ user }: { user: User }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Feed Publik</h2>
-          <p className="text-[10px] text-gray-300 uppercase tracking-[0.2em] font-bold mt-1">
+          <p className="text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] font-bold mt-1">
             Inspirasi & Refleksi dari Teman
           </p>
         </div>
         <div className="relative group w-full sm:max-w-xs">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#10b981] transition-colors" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 group-focus-within:text-[#10b981] transition-colors" />
           <input 
             type="text" 
             placeholder="Cari Jurnal/Siswa..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-mono shadow-sm"
+            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-mono shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         </div>
       </div>
 
       {loading ? (
-        <div className="py-20 flex flex-col items-center gap-4 text-gray-200 uppercase tracking-widest font-bold text-[10px]">
+        <div className="py-20 flex flex-col items-center gap-4 text-gray-200 dark:text-gray-700 uppercase tracking-widest font-bold text-[10px]">
           <Activity size={24} className="animate-spin text-[#10b981]" />
           <span>Mencari Inspirasi...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-20 text-center bg-gray-50 dark:bg-gray-900/50 border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
           <Zap size={24} className="mx-auto mb-3 text-gray-100" />
-          <p className="text-xs text-gray-300 uppercase tracking-widest font-bold">Belum ada jurnal publik tersedia.</p>
+          <p className="text-xs text-gray-300 dark:text-gray-600 uppercase tracking-widest font-bold">Belum ada jurnal publik tersedia.</p>
         </div>
       ) : (
         <div className="grid gap-3">
@@ -923,9 +923,9 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
           <motion.div 
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-t sm:border border-gray-200 shadow-2xl shadow-gray-300/30"
+            className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-t sm:border border-gray-200 dark:border-gray-700 shadow-2xl shadow-gray-300/30 dark:shadow-gray-950"
           >
-            <div className="w-12 h-1 bg-gray-100 rounded-full mx-auto mb-3 sm:hidden" />
+            <div className="w-12 h-1 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto mb-3 sm:hidden" />
             
             <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800 pb-3">
               <div>
@@ -933,7 +933,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                   {isEditing ? "Edit Jurnal" : "Detail Jurnal"}
                 </h2>
                 {entry.user && !isEditing && (
-                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1 font-bold">
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1 font-bold">
                     Oleh: {entry.user.name} · {entry.user.nis}
                   </p>
                 )}
@@ -944,7 +944,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                     {canEdit && (
                       <button 
                         onClick={() => setIsEditing(true)} 
-                        className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all text-gray-600 hover:text-emerald-600"
+                        className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"
                         title="Edit"
                       >
                         <Pencil size={16} />
@@ -975,7 +975,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                             }
                           } as any);
                         }}
-                        className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all text-gray-500 hover:text-red-400"
+                        className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-gray-500 dark:text-gray-400 hover:text-red-400 dark:hover:text-red-400"
                         title="Hapus"
                       >
                         <Trash2 size={16} />
@@ -985,7 +985,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                 )}
                 <button 
                   onClick={onClose} 
-                  className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all text-gray-500"
+                  className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-gray-500 dark:text-gray-400"
                   title="Tutup"
                 >
                   <X size={16} />
@@ -998,7 +998,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                 <div className="space-y-5">
                   <div className="space-y-4">
                     <div>
-                      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-2 block">Bagaimana Mood Kamu?</label>
+                      <label className="text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mb-2 block">Bagaimana Mood Kamu?</label>
                       <div className="grid grid-cols-6 gap-1.5">
                         {MOODS.map(m => (
                           <button 
@@ -1008,7 +1008,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                               "p-1.5 sm:p-2 rounded-lg border transition-all duration-300 flex flex-col items-center gap-1 group",
                               editedMood.label === m.label 
                                 ? "bg-emerald-50 border-emerald-400 text-emerald-600" 
-                                : "bg-white border-gray-200 text-gray-500 hover:border-emerald-200"
+                                : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-emerald-200"
                             )}
                           >
                             <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform">{m.emoji}</span>
@@ -1019,7 +1019,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                     </div>
 
                     <div>
-                      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-1.5 block">Judul Jurnal</label>
+                      <label className="text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mb-1.5 block">Judul Jurnal</label>
                       <input 
                         value={editedTitle} 
                         onChange={e => {
@@ -1027,7 +1027,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                           if (errors.title) setErrors({...errors, title: undefined});
                         }}
                         className={cn(
-                          "w-full bg-gray-50 border rounded-lg px-3 py-2 outline-none transition-all text-xs sm:text-sm",
+                          "w-full bg-gray-50 dark:bg-gray-800 border rounded-lg px-3 py-2 outline-none transition-all text-xs sm:text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500",
                           errors.title ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
                         )}
                       />
@@ -1035,7 +1035,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                     </div>
 
                     <div>
-                      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-1.5 block">Cerita Harimu</label>
+                      <label className="text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mb-1.5 block">Cerita Harimu</label>
                       <textarea 
                         value={editedBody} 
                         onChange={e => {
@@ -1043,7 +1043,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                           if (errors.body) setErrors({...errors, body: undefined});
                         }}
                         className={cn(
-                          "w-full bg-gray-50 border rounded-lg p-3 min-h-30 sm:min-h-37.5 outline-none text-gray-700 leading-relaxed transition-all resize-none text-xs sm:text-sm",
+                          "w-full bg-gray-50 dark:bg-gray-800 border rounded-lg p-3 min-h-30 sm:min-h-37.5 outline-none text-gray-700 dark:text-gray-200 leading-relaxed transition-all resize-none text-xs sm:text-sm",
                           errors.body ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
                         )}
                       />
@@ -1065,7 +1065,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                   <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
                     <button 
                       onClick={() => setIsEditing(false)}
-                      className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-all"
+                      className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold text-xs uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
                     >
                       Batal
                     </button>
@@ -1082,13 +1082,13 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                    <div className="text-2xl sm:text-3xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="text-2xl sm:text-3xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
                       {entry.mood}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-serif text-base sm:text-lg font-bold truncate">{entry.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest font-medium">
+                        <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium">
                           {new Date(entry.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </p>
                         <span className="flex items-center gap-1 text-[9px] text-[#10b981] font-mono">
@@ -1246,10 +1246,10 @@ function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, l
       <div className="space-y-4 mb-4">
         {loading && comments.length === 0 ? (
           <div className="flex justify-center p-3">
-            <Activity size={14} className="animate-spin text-gray-300" />
+            <Activity size={14} className="animate-spin text-gray-300 dark:text-gray-600" />
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-[9px] text-gray-400 uppercase tracking-widest text-center py-3 bg-gray-50 rounded-lg border border-gray-100">Belum ada komentar.</p>
+          <p className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center py-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">Belum ada komentar.</p>
         ) : (
           comments.map(c => (
             <div key={c.id} className="flex gap-2.5 group">
@@ -1259,10 +1259,10 @@ function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, l
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-bold text-gray-500">{c.user.name}</span>
+                    <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400">{c.user.name}</span>
                     {c.user.role === "ADMIN" && <span className="text-[7px] bg-emerald-100 text-emerald-600 px-1 rounded uppercase font-bold tracking-tighter">Admin</span>}
                   </div>
-                  <span className="text-[7px] text-gray-200 uppercase font-mono">{new Date(c.createdAt).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
+                  <span className="text-[7px] text-gray-200 dark:text-gray-700 uppercase font-mono">{new Date(c.createdAt).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-2 rounded-lg rounded-tl-none relative group">
                   <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-relaxed">{c.body}</p>
@@ -1369,12 +1369,12 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 sm:space-y-6 pb-8">
       <header>
         <h2 className="font-serif text-lg sm:text-xl font-bold mb-0.5">Tulis Jurnal</h2>
-        <p className="text-gray-500 text-[10px] sm:text-xs">Abadikan momen dan refleksimu hari ini.</p>
+        <p className="text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs">Abadikan momen dan refleksimu hari ini.</p>
       </header>
 
       <section className="space-y-4 sm:space-y-6">
         <div>
-          <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-3 block">Bagaimana Mood Kamu?</label>
+          <label className="text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mb-3 block">Bagaimana Mood Kamu?</label>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {MOODS.map(m => (
               <button 
@@ -1384,7 +1384,7 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
                   "p-2 sm:p-2.5 rounded-xl border transition-all duration-300 flex flex-col items-center gap-0.5 group relative",
                   mood.label === m.label 
                     ? "bg-emerald-50 border-emerald-400 text-emerald-600 shadow-sm" 
-                    : "bg-white border-gray-200 text-gray-500 hover:border-emerald-200 shadow-sm"
+                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-emerald-200 shadow-sm"
                 )}
               >
                 <span className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">{m.emoji}</span>
@@ -1410,7 +1410,7 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
                 if (errors.title) setErrors({...errors, title: undefined});
               }}
               className={cn(
-                "w-full bg-white border rounded-xl px-4 py-2.5 outline-none transition-all font-medium text-xs sm:text-sm",
+                "w-full bg-white dark:bg-gray-800 border rounded-xl px-4 py-2.5 outline-none transition-all font-medium text-xs sm:text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500",
                 errors.title ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
               )}
             />
@@ -1427,7 +1427,7 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
                 if (errors.body) setErrors({...errors, body: undefined});
               }}
               className={cn(
-                "w-full bg-white border rounded-xl p-4 min-h-30 sm:min-h-40 outline-none text-gray-700 leading-relaxed transition-all resize-none text-xs sm:text-sm",
+                "w-full bg-white dark:bg-gray-800 border rounded-xl p-4 min-h-30 sm:min-h-40 outline-none text-gray-700 dark:text-gray-200 leading-relaxed transition-all resize-none text-xs sm:text-sm",
                 errors.body ? "border-red-500/30 focus:border-red-500/50" : "border-gray-200 focus:border-emerald-400"
               )}
             />
@@ -1470,8 +1470,8 @@ function WritePage({ user, onSave }: { user: User, onSave: () => void }) {
 
 function RefInput({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-3 group focus-within:border-emerald-300 transition-all shadow-sm">
-      <label className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-widest font-bold mb-1.5 block leading-none">{label}</label>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 group focus-within:border-emerald-300 dark:focus-within:border-emerald-600 transition-all shadow-sm">
+      <label className="text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-1.5 block leading-none">{label}</label>
       <textarea 
         value={value} onChange={e => onChange(e.target.value)}
         placeholder="Tulis refleksi..."
@@ -1533,21 +1533,21 @@ function HistoryPage({ user }: { user: User }) {
         <h2 className="font-serif text-xl sm:text-2xl font-bold mb-0.5">
           {user.role === "ADMIN" ? "Monitoring Riwayat Siswa" : "Riwayat Jurnal"}
         </h2>
-        <p className="text-gray-500 text-xs text-balance">
+        <p className="text-gray-500 dark:text-gray-400 text-xs text-balance">
           {user.role === "ADMIN" ? "Arsip lengkap seluruh refleksi siswa di ekosistem." : "Arsip lengkap refleksi dirimu."}
         </p>
       </header>
 
-      <div className="space-y-3 sticky top-12 sm:top-14 bg-white/95 backdrop-blur-md py-3 z-40 border-b border-gray-100">
+      <div className="space-y-3 sticky top-12 sm:top-14 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md py-3 z-40 border-b border-gray-100 dark:border-gray-800">
         {/* Search Input */}
         <div className="relative">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600" />
           <input 
             type="text"
             placeholder="Cari kata kunci..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-medium shadow-sm"
+            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-medium shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         </div>
 
@@ -1557,7 +1557,7 @@ function HistoryPage({ user }: { user: User }) {
             onClick={() => setMoodFilter("all")}
             className={cn(
               "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border shrink-0", 
-              moodFilter === "all" ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" : "bg-white text-gray-500 border-gray-200 hover:border-emerald-200 hover:text-emerald-600"
+              moodFilter === "all" ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-200 hover:text-emerald-600"
             )}
           >
             Semua
@@ -1568,7 +1568,7 @@ function HistoryPage({ user }: { user: User }) {
               onClick={() => setMoodFilter(m.emoji)}
               className={cn(
                 "px-2.5 py-1.5 rounded-lg text-xs sm:text-sm transition-all border shrink-0", 
-                moodFilter === m.emoji ? "bg-emerald-50 border-emerald-400 text-emerald-600" : "bg-white text-gray-500 border-gray-200 hover:border-emerald-200"
+                moodFilter === m.emoji ? "bg-emerald-50 border-emerald-400 text-emerald-600" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-200"
               )}
             >
               {m.emoji}
@@ -1589,7 +1589,7 @@ function HistoryPage({ user }: { user: User }) {
               onClick={() => setDateFilter(f.id)}
               className={cn(
                 "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border whitespace-nowrap", 
-                dateFilter === f.id ? "bg-emerald-50 text-emerald-600 border-emerald-300" : "bg-white text-gray-400 border-gray-200 hover:border-emerald-200"
+                dateFilter === f.id ? "bg-emerald-50 text-emerald-600 border-emerald-300" : "bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-emerald-200"
               )}
             >
               {f.label}
@@ -1603,8 +1603,8 @@ function HistoryPage({ user }: { user: User }) {
            Array(5).fill(0).map((_, i) => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800/50 rounded-2xl animate-pulse" />)
         ) : filteredEntries.length === 0 ? (
           <div className="py-20 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-3xl">
-            <BookOpen size={30} className="mx-auto mb-3 text-gray-200" />
-            <p className="text-gray-300 uppercase tracking-[0.2em] text-[10px] font-bold">Tidak ada catatan ditemukan</p>
+            <BookOpen size={30} className="mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+            <p className="text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] text-[10px] font-bold">Tidak ada catatan ditemukan</p>
           </div>
         ) : (
           filteredEntries.map(e => <EntryCard key={e.id} entry={e} onUpdate={fetchHistory} />)
@@ -1647,7 +1647,7 @@ function KeywordMoodChart({ entries }: { entries: Entry[] }) {
   })).sort((a, b) => b.frequency - a.frequency);
 
   if (correlationData.length === 0) return (
-    <div className="h-40 flex items-center justify-center text-gray-200 uppercase tracking-widest text-[10px]">
+    <div className="h-40 flex items-center justify-center text-gray-200 dark:text-gray-700 uppercase tracking-widest text-[10px]">
       Belum ada data korelasi yang cukup
     </div>
   );
@@ -1777,24 +1777,24 @@ function GrafikPage({ user }: { user: User }) {
         <h2 className="font-serif text-xl sm:text-2xl font-bold mb-1">
           {user.role === "ADMIN" ? "Analisis Sentiment Siswa" : "Analisis Mood"}
         </h2>
-        <p className="text-gray-500 text-[10px] sm:text-xs">
+        <p className="text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs">
           {user.role === "ADMIN" ? "Visualisasi pola emosional seluruh siswa dalam sistem." : "Visualisasi pola emosional harimu."}
         </p>
       </header>
 
       <div className="grid gap-4">
         {/* Keyword Correlation Chart */}
-        <section className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 shadow-sm">
+        <section className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Korelasi Mood</h3>
+            <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500">Korelasi Mood</h3>
             <span className="text-[8px] text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">AI Node</span>
           </div>
           <KeywordMoodChart entries={entries} />
         </section>
 
         {/* Frequency Line Chart */}
-        <section className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 shadow-sm">
-          <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">Aktivitas (7 Hari)</h3>
+        <section className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 sm:p-6 shadow-sm">
+          <h3 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500 mb-4">Aktivitas (7 Hari)</h3>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={frequencyData}>
@@ -1921,24 +1921,24 @@ function ProfilePage({ user, onUpdate }: { user: User, onUpdate: (u: User) => vo
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <header>
         <h2 className="font-serif text-xl sm:text-2xl font-bold mb-1 text-[#10b981]">Pengaturan Profil</h2>
-        <p className="text-gray-500 text-[10px] sm:text-xs uppercase tracking-widest font-bold">Kelola Identitas & Keamanan Akun</p>
+        <p className="text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs uppercase tracking-widest font-bold">Kelola Identitas & Keamanan Akun</p>
       </header>
 
-      <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm space-y-6">
         <form onSubmit={handleUpdateProfile} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold block">Informasi Dasar</label>
+            <label className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold block">Informasi Dasar</label>
             <div className="grid gap-4">
               <div>
-                <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Nama Lengkap</label>
+                <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5 block">Nama Lengkap</label>
                 <input 
                   value={name} 
                   onChange={e => setName(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all font-medium shadow-sm"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all font-medium shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
               <div>
-                <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">NIS (Tidak dapat diubah)</label>
+                <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5 block">NIS (Tidak dapat diubah)</label>
                 <input 
                   value={user.nis} 
                   disabled
@@ -1949,38 +1949,38 @@ function ProfilePage({ user, onUpdate }: { user: User, onUpdate: (u: User) => vo
           </div>
 
           <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
-            <label className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold block">Ubah Password</label>
-            <p className="text-[9px] text-gray-500 italic">Kosongkan jika tidak ingin mengubah password.</p>
+            <label className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold block">Ubah Password</label>
+            <p className="text-[9px] text-gray-500 dark:text-gray-400 italic">Kosongkan jika tidak ingin mengubah password.</p>
             
             <div className="grid gap-4">
               <div>
-                <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Password Saat Ini</label>
+                <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5 block">Password Saat Ini</label>
                 <input 
                   type="password"
                   value={currentPassword} 
                   onChange={e => setCurrentPassword(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   placeholder="••••••••"
                 />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Password Baru</label>
+                  <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5 block">Password Baru</label>
                   <input 
                     type="password"
                     value={newPassword} 
                     onChange={e => setNewPassword(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     placeholder="••••••••"
                   />
                 </div>
                 <div>
-                  <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-1.5 block">Konfirmasi Password Baru</label>
+                  <label className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5 block">Konfirmasi Password Baru</label>
                   <input 
                     type="password"
                     value={confirmPassword} 
                     onChange={e => setConfirmPassword(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 transition-all shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     placeholder="••••••••"
                   />
                 </div>
@@ -2016,7 +2016,7 @@ function ProfilePage({ user, onUpdate }: { user: User, onUpdate: (u: User) => vo
       <div className="bg-red-50 border border-red-100 rounded-2xl p-5 flex items-center justify-between group">
         <div>
           <h4 className="text-xs font-bold text-red-400/80 mb-1 group-hover:text-red-400 transition-colors">Zona Bahaya</h4>
-          <p className="text-[9px] text-gray-300 uppercase tracking-tighter">Hubungi Admin jika Anda ingin menghapus akun ini.</p>
+          <p className="text-[9px] text-gray-300 dark:text-gray-600 uppercase tracking-tighter">Hubungi Admin jika Anda ingin menghapus akun ini.</p>
         </div>
         <UserX size={20} className="text-red-500/20 group-hover:text-red-500/40 transition-colors" />
       </div>
@@ -2039,11 +2039,11 @@ function ConfirmModal({
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white border border-gray-200 rounded-2xl p-5 w-full max-w-75 shadow-2xl shadow-gray-300/30"
+        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 w-full max-w-75 shadow-2xl shadow-gray-300/30 dark:shadow-gray-950"
       >
         <div className={cn(
           "flex items-center gap-3 mb-3",
-          confirmVariant === "danger" ? "text-red-500" : (confirmVariant === "warning" ? "text-amber-500" : "text-emerald-600")
+          confirmVariant === "danger" ? "text-red-500 dark:text-red-400" : (confirmVariant === "warning" ? "text-amber-500 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400")
         )}>
           {isAlert ? <AlertCircle size={20} /> : <AlertCircle size={20} />}
           <h3 className="font-serif text-lg font-bold">{title}</h3>
@@ -2055,7 +2055,7 @@ function ConfirmModal({
           {!isAlert && (
             <button 
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-all"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 font-bold text-[10px] uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
             >
               Batal
             </button>
@@ -2453,7 +2453,7 @@ function AdminMonitor({ user }: { user: User }) {
   }, [user]);
 
   if (loadingStats && !stats) return (
-    <div className="h-64 flex flex-col items-center justify-center gap-4 text-gray-300">
+    <div className="h-64 flex flex-col items-center justify-center gap-4 text-gray-300 dark:text-gray-600">
       <Activity className="animate-spin text-[#10b981]" />
       <p className="text-xs uppercase tracking-widest">Menghubungkan ke pusat data...</p>
     </div>
@@ -2474,7 +2474,7 @@ function AdminMonitor({ user }: { user: User }) {
           <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-1 flex items-center gap-2">
             <ShieldCheck className="text-[#10b981] shrink-0" size={24} /> Panel Monitoring
           </h2>
-          <p className="text-gray-500 text-xs sm:text-sm tracking-wide">Monitoring real-time Jurnal Harian Siswa.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm tracking-wide">Monitoring real-time Jurnal Harian Siswa.</p>
         </div>
         <button 
           onClick={exportToExcel}
@@ -2487,7 +2487,7 @@ function AdminMonitor({ user }: { user: User }) {
       </header>
 
       {/* Sub-Tabs Navigation */}
-      <div className="flex bg-gray-50 p-1 rounded-2xl border border-gray-100 overflow-x-auto no-scrollbar shadow-inner">
+      <div className="flex bg-gray-50 dark:bg-gray-800 p-1 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-x-auto no-scrollbar shadow-inner">
         {[
           { id: "dashboard", label: "Overview", icon: Grid },
           { id: "siswa", label: "Siswa", icon: UserIcon },
@@ -2499,7 +2499,7 @@ function AdminMonitor({ user }: { user: User }) {
             onClick={() => setActiveSubTab(t.id)}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap",
-              activeSubTab === t.id ? "bg-emerald-500 text-white shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              activeSubTab === t.id ? "bg-emerald-500 text-white shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             )}
           >
             <t.icon size={14} />
@@ -2519,16 +2519,16 @@ function AdminMonitor({ user }: { user: User }) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <section className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold uppercase tracking-widest text-xs text-gray-400">Keyword Analysis</h3>
+                  <h3 className="font-bold uppercase tracking-widest text-xs text-gray-400 dark:text-gray-500">Keyword Analysis</h3>
                   <span className="text-[10px] text-[#10b981] font-bold">SENTIMAN GLOBAL</span>
                 </div>
                 <KeywordMoodChart entries={stats.allEntries} />
               </section>
 
-              <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-                 <h3 className="font-bold uppercase tracking-widest text-xs text-gray-400 mb-6">Distribusi Mood Siswa</h3>
+              <section className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+                 <h3 className="font-bold uppercase tracking-widest text-xs text-gray-400 dark:text-gray-500 mb-6">Distribusi Mood Siswa</h3>
                  <div className="h-80 w-full">
                    <ResponsiveContainer width="100%" height="100%">
                      <PieChart>
