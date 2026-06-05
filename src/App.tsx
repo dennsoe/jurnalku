@@ -557,6 +557,20 @@ function ReactionButton({ type, emoji, count, active, disabled, onClick }: { typ
 }
 
 function IntervensiPage({ user }: { user: User }) {
+  // Admin: tampilkan panel kelola kuesioner
+  if (user.role === "ADMIN") {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="space-y-5">
+        <div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Intervensi</h2>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mt-1">Kelola Kuesioner & Program BK</p>
+        </div>
+        <AdminKuesionerPanel />
+      </motion.div>
+    );
+  }
+
+  // Siswa: tampilkan daftar kuesioner aktif untuk diisi
   const [list, setList] = useState<Kuesioner[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Kuesioner | null>(null);
@@ -2812,7 +2826,7 @@ function AdminMonitor({ user }: { user: User }) {
           { id: "dashboard", label: "Overview", icon: Grid },
           { id: "siswa", label: "Siswa", icon: UserIcon },
           { id: "jurnal", label: "Semua Jurnal", icon: BookOpen },
-          { id: "kuesioner", label: "Kuesioner", icon: ClipboardList },
+          { id: "hasil-kuesioner", label: "Hasil Kuesioner", icon: ClipboardList },
           { id: "logs", label: "Logs", icon: Activity },
         ].map(t => (
           <button
@@ -3049,9 +3063,9 @@ function AdminMonitor({ user }: { user: User }) {
           </motion.div>
         )}
 
-        {activeSubTab === "kuesioner" && (
-          <motion.div key="kuesioner" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <AdminKuesionerPanel />
+        {activeSubTab === "hasil-kuesioner" && (
+          <motion.div key="hasil-kuesioner" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <HasilKuesionerPanel stats={stats} />
           </motion.div>
         )}
 
@@ -3133,6 +3147,281 @@ function StatCard({ label, value, unit, className }: any) {
         <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight leading-none">{value}</div>
         {unit && <div className="text-[9px] sm:text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">{unit}</div>}
       </div>
+    </div>
+  );
+}
+
+// ===== HASIL KUESIONER PANEL (Admin sub-tab) =====
+function HasilKuesionerPanel({ stats }: { stats: any }) {
+  const [list, setList] = useState<Kuesioner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedK, setSelectedK] = useState<Kuesioner | null>(null);
+  const [hasil, setHasil] = useState<any[]>([]);
+  const [loadingHasil, setLoadingHasil] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const fetchList = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch("/api/kuesioner");
+      setList(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); setList([]); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchList(); }, []);
+
+  const loadHasil = async (k: Kuesioner) => {
+    setSelectedK(k);
+    setLoadingHasil(true);
+    setHasil([]);
+    try {
+      const data = await apiFetch(`/api/kuesioner/${k.id}/hasil`);
+      setHasil(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); }
+    finally { setLoadingHasil(false); }
+  };
+
+  const exportExcelHasil = async () => {
+    if (!selectedK || hasil.length === 0) return;
+    setExporting(true);
+    try {
+      const ExcelJS = (await import("exceljs")).default;
+      const wb = new ExcelJS.Workbook();
+      wb.creator = "Jurnal Self Acceptance";
+      wb.created = new Date();
+      const exportDate = new Date().toLocaleString("id-ID");
+
+      const GREEN = "FF10B981";
+      const WHITE = "FFFFFFFF";
+      const GRAY_HEADER = "FF374151";
+
+      const styleHeader = (row: import('exceljs').Row, bgColor = GRAY_HEADER) => {
+        row.eachCell(cell => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgColor } };
+          cell.font = { bold: true, color: { argb: WHITE }, size: 10 };
+          cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+          cell.border = {
+            top: { style: "thin", color: { argb: "FFD0D0D0" } },
+            bottom: { style: "thin", color: { argb: "FFD0D0D0" } },
+            left: { style: "thin", color: { argb: "FFD0D0D0" } },
+            right: { style: "thin", color: { argb: "FFD0D0D0" } },
+          };
+        });
+        row.height = 28;
+      };
+
+      const styleDataRow = (row: import('exceljs').Row, isAlt: boolean) => {
+        row.eachCell({ includeEmpty: true }, cell => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: isAlt ? "FFF9FAFB" : WHITE } };
+          cell.font = { size: 9, color: { argb: "FF333333" } };
+          cell.alignment = { vertical: "middle", wrapText: true };
+          cell.border = {
+            bottom: { style: "hair", color: { argb: "FFE0E0E0" } },
+            left: { style: "hair", color: { argb: "FFE0E0E0" } },
+            right: { style: "hair", color: { argb: "FFE0E0E0" } },
+          };
+        });
+        row.height = 18;
+      };
+
+      // Kumpulkan semua pertanyaan flat dari indikator
+      const semuaPertanyaan = (selectedK.indikator || []).flatMap(ind =>
+        (ind.pertanyaan || []).map(p => ({ ...p, namaIndikator: ind.nama }))
+      );
+
+      // Sheet: Rekap Responden
+      const wsRekap = wb.addWorksheet("Rekap Responden", { properties: { tabColor: { argb: GREEN } } });
+      wsRekap.mergeCells(1, 1, 1, 5);
+      const titleRow = wsRekap.getRow(1);
+      titleRow.getCell(1).value = `Hasil Kuesioner: ${selectedK.judul}`;
+      titleRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREEN } };
+      titleRow.getCell(1).font = { bold: true, size: 13, color: { argb: WHITE } };
+      titleRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+      titleRow.height = 34;
+      wsRekap.mergeCells(2, 1, 2, 5);
+      const subRow = wsRekap.getRow(2);
+      subRow.getCell(1).value = `Jenis: ${selectedK.jenis} · ${hasil.length} Responden · Diekspor: ${exportDate}`;
+      subRow.getCell(1).font = { italic: true, size: 9, color: { argb: "FF888888" } };
+      subRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+      subRow.height = 18;
+      wsRekap.addRow([]);
+      wsRekap.columns = [
+        { key: "no", width: 5 },
+        { key: "nama", width: 28 },
+        { key: "nis", width: 16 },
+        { key: "waktu", width: 22 },
+        { key: "jumlah", width: 16 },
+      ];
+      const hRekap = wsRekap.addRow({ no: "No", nama: "Nama Siswa", nis: "NIS", waktu: "Waktu Submit", jumlah: "Jml Jawaban" });
+      styleHeader(hRekap, GRAY_HEADER);
+      hasil.forEach((h: any, i: number) => {
+        const row = wsRekap.addRow({
+          no: i + 1,
+          nama: h.user.name,
+          nis: h.user.nis,
+          waktu: new Date(h.submittedAt).toLocaleString("id-ID"),
+          jumlah: h.detail.length,
+        });
+        styleDataRow(row, i % 2 !== 0);
+        row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
+      });
+
+      // Sheet: Detail Jawaban (satu sheet per pertanyaan jika terlalu banyak, atau satu sheet lebar)
+      const wsDetail = wb.addWorksheet("Detail Jawaban", { properties: { tabColor: { argb: "FF4F46E5" } } });
+      // Header dinamis: Nama, NIS, [satu kolom per pertanyaan]
+      const headerCols = [
+        { key: "nama", header: "Nama Siswa", width: 28 },
+        { key: "nis", header: "NIS", width: 14 },
+        ...semuaPertanyaan.map((p, i) => ({
+          key: `q${i}`,
+          header: `[${p.namaIndikator}] ${p.teks.slice(0, 40)}${p.teks.length > 40 ? '...' : ''}`,
+          width: 22,
+        }))
+      ];
+      wsDetail.columns = headerCols;
+      wsDetail.mergeCells(1, 1, 1, headerCols.length);
+      const titleDetail = wsDetail.getRow(1);
+      titleDetail.getCell(1).value = `Detail Jawaban: ${selectedK.judul}`;
+      titleDetail.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4F46E5" } };
+      titleDetail.getCell(1).font = { bold: true, size: 13, color: { argb: WHITE } };
+      titleDetail.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+      titleDetail.height = 34;
+      wsDetail.addRow([]);
+      const hDetail = wsDetail.addRow(headerCols.map(c => c.header));
+      styleHeader(hDetail, GRAY_HEADER);
+      hasil.forEach((h: any, i: number) => {
+        const rowData: Record<string, any> = { nama: h.user.name, nis: h.user.nis };
+        semuaPertanyaan.forEach((p, idx) => {
+          const d = h.detail.find((d: any) => d.pertanyaanId === p.id);
+          if (!d) { rowData[`q${idx}`] = "-"; return; }
+          if (p.jenis === "ESAI") rowData[`q${idx}`] = d.nilaiTeks || "-";
+          else if (p.jenis === "YA_TIDAK") rowData[`q${idx}`] = d.nilaiAngka === 1 ? "Ya" : "Tidak";
+          else if (p.jenis === "PILIHAN_GANDA") {
+            const opsi = (p.opsi || []).find((o: any) => o.id === d.nilaiOpsiId);
+            rowData[`q${idx}`] = opsi ? opsi.teks : d.nilaiAngka ?? "-";
+          } else rowData[`q${idx}`] = d.nilaiAngka ?? "-";
+        });
+        const row = wsDetail.addRow(rowData);
+        styleDataRow(row, i % 2 !== 0);
+      });
+      wsDetail.views = [{ state: "frozen", xSplit: 2, ySplit: 3 }];
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Hasil_Kuesioner_${selectedK.judul.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      console.error("Export error:", e);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const STATUS_STYLE: Record<StatusKuesioner, string> = {
+    DRAFT: "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400",
+    AKTIF: "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400",
+    TUTUP: "bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-sm uppercase tracking-widest">Hasil Kuesioner</h3>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Pilih kuesioner untuk melihat jawaban siswa</p>
+        </div>
+        {selectedK && hasil.length > 0 && (
+          <button
+            onClick={exportExcelHasil}
+            disabled={exporting}
+            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm disabled:opacity-50"
+          >
+            {exporting ? <Activity size={12} className="animate-spin" /> : <FileSpreadsheet size={12} />}
+            Export Excel
+          </button>
+        )}
+      </div>
+
+      {/* Kuesioner selector */}
+      {loading ? (
+        <div className="py-10 flex items-center justify-center"><Activity size={18} className="animate-spin text-emerald-500" /></div>
+      ) : list.length === 0 ? (
+        <div className="py-12 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
+          <ClipboardList size={20} className="mx-auto mb-2 text-gray-200 dark:text-gray-700" />
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">Belum ada kuesioner dibuat</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {list.map(k => (
+            <button
+              key={k.id}
+              onClick={() => loadHasil(k)}
+              className={cn(
+                "text-left p-3 rounded-xl border transition-all",
+                selectedK?.id === k.id
+                  ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-400 dark:border-emerald-600"
+                  : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-emerald-300"
+              )}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className={cn("text-[7px] font-bold uppercase px-1.5 py-0.5 rounded-full", STATUS_STYLE[k.status])}>{k.status}</span>
+                <span className="text-[7px] text-gray-400 dark:text-gray-500 uppercase">{k.jenis}</span>
+              </div>
+              <p className={cn("text-xs font-bold leading-tight", selectedK?.id === k.id ? "text-emerald-700 dark:text-emerald-300" : "text-gray-800 dark:text-gray-100")}>{k.judul}</p>
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-1">{k._count?.jawaban || 0} responden</p>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Hasil detail */}
+      {selectedK && (
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <div>
+              <h4 className="font-bold text-xs text-gray-800 dark:text-gray-100">{selectedK.judul}</h4>
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">{hasil.length} siswa telah mengisi</p>
+            </div>
+          </div>
+          {loadingHasil ? (
+            <div className="py-8 flex items-center justify-center"><Activity size={18} className="animate-spin text-emerald-500" /></div>
+          ) : hasil.length === 0 ? (
+            <div className="py-8 text-center text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Belum ada siswa yang mengisi</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                  <tr>
+                    <th className="px-4 py-3">Siswa</th>
+                    <th className="px-4 py-3">NIS</th>
+                    <th className="px-4 py-3">Waktu Submit</th>
+                    <th className="px-4 py-3 text-center">Jawaban</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {hasil.map((h: any) => (
+                    <tr key={h.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-4 py-3 font-bold text-gray-800 dark:text-gray-100">{h.user.name}</td>
+                      <td className="px-4 py-3 font-mono text-gray-500 dark:text-gray-400 text-[10px]">{h.user.nis}</td>
+                      <td className="px-4 py-3 text-gray-400 dark:text-gray-500 text-[10px]">{new Date(h.submittedAt).toLocaleString("id-ID")}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded text-[9px] font-bold">{h.detail.length}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
