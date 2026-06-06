@@ -862,6 +862,80 @@ async function startServer() {
     }
   });
 
+  // GET /api/kuesioner/riwayat-saya — riwayat jawaban kuesioner milik user yang login
+  app.get("/api/kuesioner/riwayat-saya", async (req, res) => {
+    const decoded = requireAuth(req.headers.authorization, res);
+    if (!decoded) return;
+    try {
+      const riwayat = await prisma.jawabanKuesioner.findMany({
+        where: { userId: decoded.id },
+        orderBy: { submittedAt: "desc" },
+        include: {
+          kuesioner: {
+            select: {
+              id: true, judul: true, deskripsi: true, jenis: true,
+              indikator: {
+                orderBy: { urutan: "asc" },
+                include: {
+                  pertanyaan: {
+                    orderBy: { urutan: "asc" },
+                    include: { opsi: { orderBy: { urutan: "asc" } } }
+                  }
+                }
+              }
+            }
+          },
+          detail: {
+            include: {
+              pertanyaan: { select: { id: true, teks: true, jenis: true, indikatorId: true } }
+            }
+          }
+        }
+      });
+      res.json(riwayat);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /api/kuesioner/semua-jawaban — admin: semua jawaban kuesioner semua siswa
+  app.get("/api/kuesioner/semua-jawaban", async (req, res) => {
+    const decoded = await requireAdmin(req.headers.authorization, res);
+    if (!decoded) return;
+    try {
+      // Ambil semua kuesioner beserta semua jawaban siswa
+      const kuesionerList = await prisma.kuesioner.findMany({
+        orderBy: { createdAt: "desc" },
+        include: {
+          indikator: {
+            orderBy: { urutan: "asc" },
+            include: {
+              pertanyaan: {
+                orderBy: { urutan: "asc" },
+                include: { opsi: { orderBy: { urutan: "asc" } } }
+              }
+            }
+          },
+          jawaban: {
+            orderBy: { submittedAt: "desc" },
+            include: {
+              user: { select: { id: true, name: true, nis: true } },
+              detail: {
+                include: {
+                  pertanyaan: { select: { id: true, teks: true, jenis: true, indikatorId: true } }
+                }
+              }
+            }
+          },
+          _count: { select: { jawaban: true } }
+        }
+      });
+      res.json(kuesionerList);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // --- VITE MIDDLEWARE ---
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

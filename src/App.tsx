@@ -1826,6 +1826,11 @@ function HistoryPage({ user }: { user: User }) {
   const [dateFilter, setDateFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  // Tab: "jurnal" | "kuesioner"
+  const [activeHistoryTab, setActiveHistoryTab] = useState<"jurnal" | "kuesioner">("jurnal");
+  const [riwayatKuesioner, setRiwayatKuesioner] = useState<any[]>([]);
+  const [loadingKuesioner, setLoadingKuesioner] = useState(false);
+  const [expandedJawaban, setExpandedJawaban] = useState<string | null>(null);
 
   const fetchHistory = async () => {
     try {
@@ -1835,8 +1840,27 @@ function HistoryPage({ user }: { user: User }) {
     } catch (err) {} finally { setLoading(false); }
   };
 
+  const fetchRiwayatKuesioner = async () => {
+    setLoadingKuesioner(true);
+    try {
+      // Admin: semua jawaban semua siswa per-kuesioner
+      // Siswa: hanya jawaban milik sendiri
+      const endpoint = user.role === "ADMIN"
+        ? "/api/kuesioner/semua-jawaban"
+        : "/api/kuesioner/riwayat-saya";
+      const data = await apiFetch(endpoint);
+      setRiwayatKuesioner(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Riwayat kuesioner error:", err);
+      setRiwayatKuesioner([]);
+    } finally {
+      setLoadingKuesioner(false);
+    }
+  };
+
   useEffect(() => {
     fetchHistory();
+    fetchRiwayatKuesioner();
   }, []);
 
   const filteredEntries = entries.filter(e => {
@@ -1866,89 +1890,355 @@ function HistoryPage({ user }: { user: User }) {
     return matchesMood && matchesDate && matchesSearch;
   });
 
+  const JENIS_LABEL: Record<string, string> = {
+    UMUM: "Umum", SOSIOMETRI: "Sosiometri", DCM: "DCM", INVENTORI: "Inventori"
+  };
+  const JENIS_PERTANYAAN_LABEL: Record<string, string> = {
+    LIKERT: "Likert 1-5", SKALA: "Skala 1-10",
+    PILIHAN_GANDA: "Pilihan Ganda", YA_TIDAK: "Ya/Tidak", ESAI: "Esai"
+  };
+
+  const renderNilaiJawaban = (detail: any, pertanyaan: any) => {
+    if (!pertanyaan) return "-";
+    if (pertanyaan.jenis === "ESAI") return detail.nilaiTeks || "-";
+    if (pertanyaan.jenis === "YA_TIDAK") return detail.nilaiAngka === 1 ? "✅ Ya" : "❌ Tidak";
+    if (pertanyaan.jenis === "LIKERT") {
+      const labels = ["", "Sangat Tidak Setuju", "Tidak Setuju", "Ragu-ragu", "Setuju", "Sangat Setuju"];
+      return `${detail.nilaiAngka} — ${labels[detail.nilaiAngka] || ""}`;
+    }
+    if (pertanyaan.jenis === "SKALA") return `${detail.nilaiAngka}/10`;
+    if (pertanyaan.jenis === "PILIHAN_GANDA") {
+      const allOpsi = pertanyaan.opsi || [];
+      const opsi = allOpsi.find((o: any) => o.id === detail.nilaiOpsiId);
+      return opsi ? opsi.teks : (detail.nilaiAngka ?? "-");
+    }
+    return detail.nilaiAngka ?? detail.nilaiTeks ?? "-";
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <header>
         <h2 className="font-serif text-xl sm:text-2xl font-bold mb-0.5">
-          {user.role === "ADMIN" ? "Monitoring Riwayat Siswa" : "Riwayat Jurnal"}
+          {user.role === "ADMIN" ? "Monitoring Riwayat Siswa" : "Riwayat"}
         </h2>
         <p className="text-gray-500 dark:text-gray-400 text-xs text-balance">
-          {user.role === "ADMIN" ? "Arsip lengkap seluruh refleksi siswa di ekosistem." : "Arsip lengkap refleksi dirimu."}
+          {user.role === "ADMIN" ? "Arsip lengkap seluruh refleksi dan kuesioner siswa." : "Arsip jurnal dan kuesioner yang telah kamu isi."}
         </p>
       </header>
 
-      <div className="space-y-3 sticky top-12 sm:top-14 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md py-3 z-40 border-b border-gray-100 dark:border-gray-800">
-        {/* Search Input */}
-        <div className="relative">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600" />
-          <input 
-            type="text"
-            placeholder="Cari kata kunci..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-medium shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-          />
-        </div>
-
-        {/* Mood Filter */}
-        <div className="flex flex-wrap gap-2 sm:gap-3">
-          <button 
-            onClick={() => setMoodFilter("all")}
-            className={cn(
-              "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border shrink-0", 
-              moodFilter === "all" ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-200 hover:text-emerald-600"
-            )}
-          >
-            Semua
-          </button>
-          {MOODS.map(m => (
-            <button 
-              key={m.label}
-              onClick={() => setMoodFilter(m.emoji)}
-              className={cn(
-                "px-2.5 py-1.5 rounded-lg text-xs sm:text-sm transition-all border shrink-0", 
-                moodFilter === m.emoji ? "bg-emerald-50 border-emerald-400 text-emerald-600" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-200"
-              )}
-            >
-              {m.emoji}
-            </button>
-          ))}
-        </div>
-
-        {/* Date Filter */}
-        <div className="flex overflow-x-auto sm:flex-wrap gap-1.5 pb-1 sm:pb-0 scrollbar-hide">
-          {[
-            { id: "all", label: "Semua Waktu" },
-            { id: "weekly", label: "7 Hari" },
-            { id: "monthly", label: "30 Hari" },
-            { id: "yearly", label: "Tahun Ini" }
-          ].map(f => (
-            <button 
-              key={f.id}
-              onClick={() => setDateFilter(f.id)}
-              className={cn(
-                "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border whitespace-nowrap", 
-                dateFilter === f.id ? "bg-emerald-50 text-emerald-600 border-emerald-300" : "bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-emerald-200"
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+      {/* Tab toggle — untuk siswa DAN admin */}
+      <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-100 dark:border-gray-700 w-fit">
+        <button
+          onClick={() => setActiveHistoryTab("jurnal")}
+          className={cn(
+            "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all",
+            activeHistoryTab === "jurnal" ? "bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          )}
+        >
+          <BookOpen size={12} /> Jurnal
+          <span className={cn("ml-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold",
+            activeHistoryTab === "jurnal" ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400" : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400")}>
+            {entries.length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveHistoryTab("kuesioner")}
+          className={cn(
+            "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all",
+            activeHistoryTab === "kuesioner" ? "bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          )}
+        >
+          <ClipboardList size={12} /> Kuesioner
+          <span className={cn("ml-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold",
+            activeHistoryTab === "kuesioner" ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400" : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400")}>
+            {riwayatKuesioner.length}
+          </span>
+        </button>
       </div>
 
-      <div className="grid gap-4">
-        {loading ? (
-           Array(5).fill(0).map((_, i) => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800/50 rounded-2xl animate-pulse" />)
-        ) : filteredEntries.length === 0 ? (
-          <div className="py-20 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-3xl">
-            <BookOpen size={30} className="mx-auto mb-3 text-gray-200 dark:text-gray-700" />
-            <p className="text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] text-[10px] font-bold">Tidak ada catatan ditemukan</p>
+      {/* ===== TAB JURNAL ===== */}
+      {activeHistoryTab === "jurnal" && (
+        <>
+          <div className="space-y-3 sticky top-12 sm:top-14 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md py-3 z-40 border-b border-gray-100 dark:border-gray-800">
+            {/* Search Input */}
+            <div className="relative">
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600" />
+              <input 
+                type="text"
+                placeholder="Cari kata kunci..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-2 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 transition-all font-medium shadow-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              />
+            </div>
+
+            {/* Mood Filter */}
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <button 
+                onClick={() => setMoodFilter("all")}
+                className={cn(
+                  "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border shrink-0", 
+                  moodFilter === "all" ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-200 hover:text-emerald-600"
+                )}
+              >
+                Semua
+              </button>
+              {MOODS.map(m => (
+                <button 
+                  key={m.label}
+                  onClick={() => setMoodFilter(m.emoji)}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-lg text-xs sm:text-sm transition-all border shrink-0", 
+                    moodFilter === m.emoji ? "bg-emerald-50 border-emerald-400 text-emerald-600" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-200"
+                  )}
+                >
+                  {m.emoji}
+                </button>
+              ))}
+            </div>
+
+            {/* Date Filter */}
+            <div className="flex overflow-x-auto sm:flex-wrap gap-1.5 pb-1 sm:pb-0 scrollbar-hide">
+              {[
+                { id: "all", label: "Semua Waktu" },
+                { id: "weekly", label: "7 Hari" },
+                { id: "monthly", label: "30 Hari" },
+                { id: "yearly", label: "Tahun Ini" }
+              ].map(f => (
+                <button 
+                  key={f.id}
+                  onClick={() => setDateFilter(f.id)}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold transition-all border whitespace-nowrap", 
+                    dateFilter === f.id ? "bg-emerald-50 text-emerald-600 border-emerald-300" : "bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-emerald-200"
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
-        ) : (
-          filteredEntries.map(e => <EntryCard key={e.id} entry={e} onUpdate={fetchHistory} />)
-        )}
-      </div>
+
+          <div className="grid gap-4">
+            {loading ? (
+               Array(5).fill(0).map((_, i) => <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800/50 rounded-2xl animate-pulse" />)
+            ) : filteredEntries.length === 0 ? (
+              <div className="py-20 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-3xl">
+                <BookOpen size={30} className="mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+                <p className="text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] text-[10px] font-bold">Tidak ada catatan ditemukan</p>
+              </div>
+            ) : (
+              filteredEntries.map(e => <EntryCard key={e.id} entry={e} onUpdate={fetchHistory} />)
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ===== TAB KUESIONER ===== */}
+      {activeHistoryTab === "kuesioner" && (
+        <div className="space-y-3">
+          {loadingKuesioner ? (
+            Array(3).fill(0).map((_, i) => <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800/50 rounded-2xl animate-pulse" />)
+          ) : riwayatKuesioner.length === 0 ? (
+            <div className="py-20 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-3xl">
+              <ClipboardList size={30} className="mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+              <p className="text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] text-[10px] font-bold">
+                {user.role === "ADMIN" ? "Belum ada siswa yang mengisi kuesioner" : "Belum ada kuesioner yang diisi"}
+              </p>
+            </div>
+          ) : user.role === "ADMIN" ? (
+            // ===== ADMIN VIEW: per-kuesioner → accordion per-siswa =====
+            riwayatKuesioner.map((k: any) => {
+              const isKExpanded = expandedJawaban === k.id;
+              return (
+                <div key={k.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                  {/* Kuesioner header */}
+                  <div
+                    className="p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    onClick={() => setExpandedJawaban(isKExpanded ? null : k.id)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">{k.jenis}</span>
+                        <span className={cn("text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
+                          k.status === "AKTIF" ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400" :
+                          k.status === "TUTUP" ? "bg-red-50 dark:bg-red-950 text-red-500" : "bg-gray-100 dark:bg-gray-800 text-gray-400")}>
+                          {k.status}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-sm text-gray-800 dark:text-gray-100 mb-1">{k.judul}</h3>
+                      {k.deskripsi && <p className="text-[11px] text-gray-400 dark:text-gray-500 line-clamp-1">{k.deskripsi}</p>}
+                      <div className="flex items-center gap-3 mt-2 text-[9px] text-gray-400 dark:text-gray-500">
+                        <span className="flex items-center gap-1"><Users size={9} /> {(k.jawaban || []).length} Responden</span>
+                        <span className="flex items-center gap-1"><ListChecks size={9} /> {(k.indikator || []).length} Indikator</span>
+                      </div>
+                    </div>
+                    <motion.div animate={{ rotate: isKExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0 mt-1">
+                      <ChevronDown size={16} className="text-gray-400 dark:text-gray-500" />
+                    </motion.div>
+                  </div>
+
+                  {/* Per-siswa accordion */}
+                  <AnimatePresence>
+                    {isKExpanded && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                        <div className="border-t border-gray-100 dark:border-gray-800">
+                          {(k.jawaban || []).length === 0 ? (
+                            <div className="px-4 py-6 text-center text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Belum ada siswa yang mengisi</div>
+                          ) : (
+                            (k.jawaban || []).map((jwb: any) => {
+                              const siswaKey = `${k.id}-${jwb.id}`;
+                              const isSiswaExpanded = expandedJawaban === siswaKey;
+                              return (
+                                <div key={jwb.id} className="border-b border-gray-50 dark:border-gray-800 last:border-b-0">
+                                  {/* Siswa header */}
+                                  <div
+                                    className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
+                                    onClick={(e) => { e.stopPropagation(); setExpandedJawaban(isSiswaExpanded ? k.id : siswaKey); }}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-[9px] font-bold text-emerald-600 uppercase shrink-0">
+                                        {jwb.user.name[0]}
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-bold text-gray-800 dark:text-gray-100">{jwb.user.name}</p>
+                                        <p className="text-[9px] text-gray-400 dark:text-gray-500 font-mono">{jwb.user.nis} · {new Date(jwb.submittedAt).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <span className="text-[8px] text-emerald-600 dark:text-emerald-400 font-bold">{jwb.detail.length} jawaban</span>
+                                      <motion.div animate={{ rotate: isSiswaExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                                        <ChevronDown size={13} className="text-gray-400 dark:text-gray-500" />
+                                      </motion.div>
+                                    </div>
+                                  </div>
+
+                                  {/* Jawaban detail per siswa */}
+                                  <AnimatePresence>
+                                    {isSiswaExpanded && (
+                                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                                        <div className="bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800">
+                                          {(k.indikator || []).map((ind: any) => (
+                                            <div key={ind.id}>
+                                              <div className="px-5 py-2 bg-emerald-50/60 dark:bg-emerald-950/30 border-b border-emerald-100 dark:border-emerald-900/50">
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">{ind.nama}</p>
+                                              </div>
+                                              {(ind.pertanyaan || []).map((p: any, pIdx: number) => {
+                                                const detailItem = jwb.detail.find((d: any) => d.pertanyaanId === p.id);
+                                                return (
+                                                  <div key={p.id} className="px-5 py-2.5 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
+                                                    <div className="flex items-start gap-2">
+                                                      <span className="text-[9px] text-gray-300 dark:text-gray-600 font-mono mt-0.5 shrink-0 w-5">{pIdx + 1}.</span>
+                                                      <div className="flex-1">
+                                                        <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed mb-1">{p.teks}</p>
+                                                        {detailItem ? (
+                                                          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-lg",
+                                                            p.jenis === "ESAI"
+                                                              ? "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 italic"
+                                                              : "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300")}>
+                                                            {renderNilaiJawaban(detailItem, p)}
+                                                          </span>
+                                                        ) : (
+                                                          <span className="text-[9px] text-gray-300 dark:text-gray-600 italic">tidak dijawab</span>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })
+          ) : (
+            // ===== SISWA VIEW: per-jawaban kuesioner =====
+            riwayatKuesioner.map((r: any) => {
+              const isExpanded = expandedJawaban === r.id;
+              return (
+                <div key={r.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                  <div
+                    className="p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    onClick={() => setExpandedJawaban(isExpanded ? null : r.id)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                          <Check size={8} /> Selesai Diisi
+                        </span>
+                        <span className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                          {JENIS_LABEL[r.kuesioner.jenis] || r.kuesioner.jenis}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-sm text-gray-800 dark:text-gray-100 mb-1 leading-tight">{r.kuesioner.judul}</h3>
+                      {r.kuesioner.deskripsi && <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed line-clamp-1">{r.kuesioner.deskripsi}</p>}
+                      <div className="flex items-center gap-3 mt-2 text-[9px] text-gray-400 dark:text-gray-500 flex-wrap">
+                        <span className="flex items-center gap-1"><Calendar size={9} /> {new Date(r.submittedAt).toLocaleString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                        <span className="flex items-center gap-1"><FileQuestion size={9} /> {r.detail.length} Jawaban</span>
+                      </div>
+                    </div>
+                    <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0 mt-1">
+                      <ChevronDown size={16} className="text-gray-400 dark:text-gray-500" />
+                    </motion.div>
+                  </div>
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                        <div className="border-t border-gray-100 dark:border-gray-800">
+                          {(r.kuesioner.indikator || []).map((ind: any) => (
+                            <div key={ind.id}>
+                              <div className="px-4 py-2 bg-emerald-50/60 dark:bg-emerald-950/40 border-b border-emerald-100 dark:border-emerald-900">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">{ind.nama}</p>
+                              </div>
+                              {(ind.pertanyaan || []).map((p: any, pIdx: number) => {
+                                const detailItem = r.detail.find((d: any) => d.pertanyaanId === p.id);
+                                return (
+                                  <div key={p.id} className="px-4 py-3 border-b border-gray-50 dark:border-gray-800 last:border-b-0">
+                                    <div className="flex items-start gap-2">
+                                      <span className="text-[9px] text-gray-300 dark:text-gray-600 font-mono mt-0.5 shrink-0 w-5">{pIdx + 1}.</span>
+                                      <div className="flex-1">
+                                        <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-relaxed mb-1.5">{p.teks}</p>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">{JENIS_PERTANYAAN_LABEL[p.jenis] || p.jenis}</span>
+                                          {detailItem ? (
+                                            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-lg",
+                                              p.jenis === "ESAI" ? "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 italic" : "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300")}>
+                                              {renderNilaiJawaban(detailItem, p)}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[9px] text-gray-300 dark:text-gray-600 italic">tidak dijawab</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }
