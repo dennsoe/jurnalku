@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useMotionValue } from "motion/react";
 import { 
   BookOpen, 
   History, 
@@ -81,7 +81,9 @@ function useTheme() { return useContext(ThemeContext); }
 function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const s = localStorage.getItem('theme') as Theme | null;
-    return s === 'light' || s === 'dark' || s === 'system' ? s : 'system';
+    if (s === 'light' || s === 'dark' || s === 'system') return s;
+    localStorage.setItem('theme', 'system');
+    return 'system';
   });
   const [systemDark, setSystemDark] = useState(() =>
     window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -1207,6 +1209,41 @@ function EntryCard({ entry, onUpdate }: { entry: Entry, onUpdate?: () => void })
   );
 }
 
+const MODAL_SWIPE_CLOSE_DISTANCE = 120;
+const MODAL_SWIPE_CLOSE_VELOCITY = 700;
+
+function shouldCloseModalOnSwipe(info: { offset: { y: number }; velocity: { y: number } }) {
+  return info.offset.y > MODAL_SWIPE_CLOSE_DISTANCE || info.velocity.y > MODAL_SWIPE_CLOSE_VELOCITY;
+}
+
+function useSwipeDownToClose(onClose: () => void) {
+  const y = useMotionValue(0);
+  const startY = React.useRef<number | null>(null);
+
+  const onTouchStart = (event: React.TouchEvent) => {
+    startY.current = event.touches[0]?.clientY ?? null;
+    y.set(0);
+  };
+
+  const onTouchMove = (event: React.TouchEvent) => {
+    if (startY.current === null) return;
+    const currentY = event.touches[0]?.clientY;
+    if (currentY === undefined) return;
+    const delta = Math.max(0, currentY - startY.current);
+    y.set(delta);
+  };
+
+  const onTouchEnd = () => {
+    if (y.get() > MODAL_SWIPE_CLOSE_DISTANCE) {
+      onClose();
+    }
+    startY.current = null;
+    y.set(0);
+  };
+
+  return { y, onTouchStart, onTouchMove, onTouchEnd };
+}
+
 function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: { 
   entry: Entry, 
   open: boolean, 
@@ -1214,6 +1251,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
   onUpdate?: () => void,
   canEdit?: boolean 
 }) {
+  const swipeClose = useSwipeDownToClose(onClose);
   const [isEditing, setIsEditing] = useState(false);
   const [editedMood, setEditedMood] = useState(MOODS.find(m => m.emoji === entry.mood) || MOODS[0]);
   const [editedTitle, setEditedTitle] = useState(entry.title);
@@ -1339,7 +1377,11 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
           <motion.div 
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-t sm:border border-gray-200 dark:border-gray-700 shadow-2xl shadow-gray-300/30 dark:shadow-gray-950"
+            style={{ y: swipeClose.y }}
+            onTouchStart={swipeClose.onTouchStart}
+            onTouchMove={swipeClose.onTouchMove}
+            onTouchEnd={swipeClose.onTouchEnd}
+            className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-t sm:border border-gray-200 dark:border-gray-700 shadow-2xl shadow-gray-300/30 dark:shadow-gray-950 touch-pan-y"
           >
             <div className="w-12 h-1 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto mb-3 sm:hidden" />
             
@@ -2757,11 +2799,16 @@ function ConfirmModal({
   isAlert = false
 }: any) {
   if (!open) return null;
+  const swipeClose = useSwipeDownToClose(onClose);
   return (
     <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
+        style={{ y: swipeClose.y }}
+        onTouchStart={swipeClose.onTouchStart}
+        onTouchMove={swipeClose.onTouchMove}
+        onTouchEnd={swipeClose.onTouchEnd}
         className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 w-full max-w-75 shadow-2xl shadow-gray-300/30 dark:shadow-gray-950"
       >
         <div className={cn(
@@ -3937,6 +3984,7 @@ function AdminKuesionerPanel() {
 
 // ===== CREATE KUESIONER MODAL =====
 function CreateKuesionerModal({ onClose, onCreated }: { onClose: () => void; onCreated: (k: Kuesioner) => void }) {
+  const swipeClose = useSwipeDownToClose(onClose);
   const [judul, setJudul] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [jenis, setJenis] = useState<JenisKuesioner>("UMUM");
@@ -3963,7 +4011,11 @@ function CreateKuesionerModal({ onClose, onCreated }: { onClose: () => void; onC
   return (
     <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 w-full max-w-md shadow-2xl">
+        style={{ y: swipeClose.y }}
+        onTouchStart={swipeClose.onTouchStart}
+        onTouchMove={swipeClose.onTouchMove}
+        onTouchEnd={swipeClose.onTouchEnd}
+        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 w-full max-w-md shadow-2xl touch-pan-y">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-sm uppercase tracking-widest">Buat Kuesioner Baru</h3>
           <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"><X size={16} /></button>
