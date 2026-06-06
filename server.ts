@@ -850,7 +850,8 @@ async function startServer() {
           user: { select: { id: true, name: true, nis: true } },
           detail: {
             include: {
-              pertanyaan: { select: { id: true, teks: true, jenis: true, indikatorId: true } }
+              // include the pertanyaan and its opsi so frontend can resolve selected pilihan teks
+              pertanyaan: { include: { opsi: true } }
             }
           }
         },

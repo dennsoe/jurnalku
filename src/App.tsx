@@ -3485,16 +3485,19 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
       const wb = new ExcelJS.Workbook();
       wb.creator = "Jurnal Self Acceptance";
       wb.created = new Date();
-      const exportDate = new Date().toLocaleString("id-ID");
+      const exportDate = new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" });
 
-      const GREEN = "FF10B981";
+      const ORANGE = "FFCD7F3F";
+      const ORANGE_LIGHT = "FFFFF3E8";
+      const DARK_BG = "FF1A1D27";
       const WHITE = "FFFFFFFF";
-      const GRAY_HEADER = "FF374151";
+      const GRAY_HEADER = "FF2C2F3E";
+      const GRAY_ROW_ALT = "FFF5F5F5";
 
       const styleHeader = (row: import('exceljs').Row, bgColor = GRAY_HEADER) => {
         row.eachCell(cell => {
           cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgColor } };
-          cell.font = { bold: true, color: { argb: WHITE }, size: 10 };
+          cell.font = { bold: true, color: { argb: bgColor === GRAY_HEADER ? WHITE : "FF1A1D27" }, size: 10 };
           cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
           cell.border = {
             top: { style: "thin", color: { argb: "FFD0D0D0" } },
@@ -3508,7 +3511,7 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
 
       const styleDataRow = (row: import('exceljs').Row, isAlt: boolean) => {
         row.eachCell({ includeEmpty: true }, cell => {
-          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: isAlt ? "FFF9FAFB" : WHITE } };
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: isAlt ? GRAY_ROW_ALT : WHITE } };
           cell.font = { size: 9, color: { argb: "FF333333" } };
           cell.alignment = { vertical: "middle", wrapText: true };
           cell.border = {
@@ -3520,35 +3523,33 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
         row.height = 18;
       };
 
-      // Kumpulkan semua pertanyaan flat dari indikator
-      const semuaPertanyaan = (selectedK.indikator || []).flatMap(ind =>
-        (ind.pertanyaan || []).map(p => ({ ...p, namaIndikator: ind.nama }))
-      );
+      const addSheetTitle = (ws: import('exceljs').Worksheet, title: string, subtitle: string, colCount: number) => {
+        ws.mergeCells(1, 1, 1, colCount);
+        const titleRow = ws.getRow(1);
+        titleRow.getCell(1).value = title;
+        titleRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: ORANGE } };
+        titleRow.getCell(1).font = { bold: true, size: 14, color: { argb: WHITE } };
+        titleRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+        titleRow.height = 36;
+
+        ws.mergeCells(2, 1, 2, colCount);
+        const subRow = ws.getRow(2);
+        subRow.getCell(1).value = subtitle;
+        subRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: ORANGE_LIGHT } };
+        subRow.getCell(1).font = { italic: true, size: 9, color: { argb: "FF888888" } };
+        subRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+        subRow.height = 20;
+
+        ws.addRow([]);
+      };
+
+      // Kumpulkan semua pertanyaan flat dari indikator (dideklarasikan nanti sebelum sheet Detail)
 
       // Sheet: Rekap Responden
-      const wsRekap = wb.addWorksheet("Rekap Responden", { properties: { tabColor: { argb: GREEN } } });
-      wsRekap.mergeCells(1, 1, 1, 5);
-      const titleRow = wsRekap.getRow(1);
-      titleRow.getCell(1).value = `Hasil Kuesioner: ${selectedK.judul}`;
-      titleRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREEN } };
-      titleRow.getCell(1).font = { bold: true, size: 13, color: { argb: WHITE } };
-      titleRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
-      titleRow.height = 34;
-      wsRekap.mergeCells(2, 1, 2, 5);
-      const subRow = wsRekap.getRow(2);
-      subRow.getCell(1).value = `Jenis: ${selectedK.jenis} · ${hasil.length} Responden · Diekspor: ${exportDate}`;
-      subRow.getCell(1).font = { italic: true, size: 9, color: { argb: "FF888888" } };
-      subRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
-      subRow.height = 18;
-      wsRekap.addRow([]);
-      wsRekap.columns = [
-        { key: "no", width: 5 },
-        { key: "nama", width: 28 },
-        { key: "nis", width: 16 },
-        { key: "waktu", width: 22 },
-        { key: "jumlah", width: 16 },
-      ];
-      const hRekap = wsRekap.addRow({ no: "No", nama: "Nama Siswa", nis: "NIS", waktu: "Waktu Submit", jumlah: "Jml Jawaban" });
+      const wsRekap = wb.addWorksheet("Rekap Responden", { properties: { tabColor: { argb: ORANGE } } });
+      wsRekap.columns = [ { key: "no", width: 5 }, { key: "nama", width: 28 }, { key: "nis", width: 16 }, { key: "waktu", width: 22 }, { key: "jumlah", width: 16 } ];
+      addSheetTitle(wsRekap, `Hasil Kuesioner: ${selectedK.judul}`, `Jenis: ${selectedK.jenis} · ${hasil.length} Responden · Diekspor: ${exportDate}`, 5);
+      const hRekap = wsRekap.addRow(wsRekap.columns.map((c: any) => c.header || c.key));
       styleHeader(hRekap, GRAY_HEADER);
       hasil.forEach((h: any, i: number) => {
         const row = wsRekap.addRow({
@@ -3562,33 +3563,22 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
         row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
       });
 
-      // Sheet: Detail Jawaban (satu sheet per pertanyaan jika terlalu banyak, atau satu sheet lebar)
+      // Sheet: Detail Jawaban (wide table per pertanyaan similar to jurnal detail)
+      const semuaPertanyaan = (selectedK.indikator || []).flatMap(ind => (ind.pertanyaan || []).map(p => ({ ...p, namaIndikator: ind.nama })));
       const wsDetail = wb.addWorksheet("Detail Jawaban", { properties: { tabColor: { argb: "FF4F46E5" } } });
-      // Header dinamis: Nama, NIS, [satu kolom per pertanyaan]
       const headerCols = [
         { key: "nama", header: "Nama Siswa", width: 28 },
         { key: "nis", header: "NIS", width: 14 },
-        ...semuaPertanyaan.map((p, i) => ({
-          key: `q${i}`,
-          header: `[${p.namaIndikator}] ${p.teks.slice(0, 40)}${p.teks.length > 40 ? '...' : ''}`,
-          width: 22,
-        }))
+        ...semuaPertanyaan.map((p, i) => ({ key: `q${i}`, header: `[${p.namaIndikator}] ${p.teks.slice(0, 40)}${p.teks.length > 40 ? '...' : ''}`, width: 22 }))
       ];
       wsDetail.columns = headerCols;
-      wsDetail.mergeCells(1, 1, 1, headerCols.length);
-      const titleDetail = wsDetail.getRow(1);
-      titleDetail.getCell(1).value = `Detail Jawaban: ${selectedK.judul}`;
-      titleDetail.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4F46E5" } };
-      titleDetail.getCell(1).font = { bold: true, size: 13, color: { argb: WHITE } };
-      titleDetail.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
-      titleDetail.height = 34;
-      wsDetail.addRow([]);
+      addSheetTitle(wsDetail, `Detail Jawaban: ${selectedK.judul}`, `Total pertanyaan: ${semuaPertanyaan.length} · Diekspor: ${exportDate}`, headerCols.length);
       const hDetail = wsDetail.addRow(headerCols.map(c => c.header));
       styleHeader(hDetail, GRAY_HEADER);
       hasil.forEach((h: any, i: number) => {
         const rowData: Record<string, any> = { nama: h.user.name, nis: h.user.nis };
         semuaPertanyaan.forEach((p, idx) => {
-          const d = h.detail.find((d: any) => d.pertanyaanId === p.id);
+          const d = h.detail.find((dd: any) => dd.pertanyaanId === p.id);
           if (!d) { rowData[`q${idx}`] = "-"; return; }
           if (p.jenis === "ESAI") rowData[`q${idx}`] = d.nilaiTeks || "-";
           else if (p.jenis === "YA_TIDAK") rowData[`q${idx}`] = d.nilaiAngka === 1 ? "Ya" : "Tidak";
@@ -3938,6 +3928,10 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
   const [showAddQ, setShowAddQ] = useState<string | null>(null); // indikatorId
   const [savingInd, setSavingInd] = useState(false);
   const [confirmData, setConfirmData] = useState<any>({ open: false });
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [expandedResId, setExpandedResId] = useState<string | null>(null);
+  const [exportingHasil, setExportingHasil] = useState(false);
 
   const refresh = async () => {
     try {
@@ -4001,6 +3995,115 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
     finally { setLoadingHasil(false); }
   };
 
+  const exportHasilToExcel = async () => {
+    if (!k || hasil.length === 0) return;
+    setExportingHasil(true);
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const wb = new ExcelJS.Workbook();
+      wb.creator = "Jurnal Self Acceptance";
+      wb.created = new Date();
+
+      const exportDate = new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" });
+      const ORANGE = "FFCD7F3F";
+      const ORANGE_LIGHT = "FFFFF3E8";
+      const DARK_BG = "FF1A1D27";
+      const WHITE = "FFFFFFFF";
+      const GRAY_HEADER = "FF2C2F3E";
+      const GRAY_ROW_ALT = "FFF5F5F5";
+
+      const styleHeader = (row: import('exceljs').Row, bgColor = GRAY_HEADER) => {
+        row.eachCell(cell => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgColor } };
+          cell.font = { bold: true, color: { argb: bgColor === GRAY_HEADER ? WHITE : "FF1A1D27" }, size: 10 };
+          cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+          cell.border = { top: { style: "thin", color: { argb: "FFD0D0D0" } }, bottom: { style: "thin", color: { argb: "FFD0D0D0" } }, left: { style: "thin", color: { argb: "FFD0D0D0" } }, right: { style: "thin", color: { argb: "FFD0D0D0" } } };
+        });
+        row.height = 28;
+      };
+
+      const styleDataRow = (row: import('exceljs').Row, isAlt: boolean) => {
+        row.eachCell({ includeEmpty: true }, cell => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: isAlt ? GRAY_ROW_ALT : WHITE } };
+          cell.font = { size: 9, color: { argb: "FF333333" } };
+          cell.alignment = { vertical: "middle", wrapText: true };
+          cell.border = { bottom: { style: "hair", color: { argb: "FFE0E0E0" } }, left: { style: "hair", color: { argb: "FFE0E0E0" } }, right: { style: "hair", color: { argb: "FFE0E0E0" } } };
+        });
+        row.height = 18;
+      };
+
+      const addSheetTitle = (ws: import('exceljs').Worksheet, title: string, subtitle: string, colCount: number) => {
+        ws.mergeCells(1, 1, 1, colCount);
+        const titleRow = ws.getRow(1);
+        titleRow.getCell(1).value = title;
+        titleRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: ORANGE } };
+        titleRow.getCell(1).font = { bold: true, size: 14, color: { argb: WHITE } };
+        titleRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+        titleRow.height = 36;
+
+        ws.mergeCells(2, 1, 2, colCount);
+        const subRow = ws.getRow(2);
+        subRow.getCell(1).value = subtitle;
+        subRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: ORANGE_LIGHT } };
+        subRow.getCell(1).font = { italic: true, size: 9, color: { argb: "FF888888" } };
+        subRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+        subRow.height = 20;
+
+        ws.addRow([]);
+      };
+
+      // Rekap
+      const wsRekap = wb.addWorksheet("Rekap Responden", { properties: { tabColor: { argb: ORANGE } } });
+      wsRekap.columns = [ { key: "no", width: 5 }, { key: "nama", width: 28 }, { key: "nis", width: 16 }, { key: "waktu", width: 22 }, { key: "jumlah", width: 16 } ];
+      addSheetTitle(wsRekap, `Hasil Kuesioner: ${k.judul}`, `Jenis: ${k.jenis} · ${hasil.length} Responden · Diekspor: ${exportDate}`, 5);
+      const hRekap = wsRekap.addRow(wsRekap.columns.map((c: any) => c.header || c.key));
+      styleHeader(hRekap, GRAY_HEADER);
+      hasil.forEach((hh: any, i: number) => {
+        const row = wsRekap.addRow({ no: i + 1, nama: hh.user.name, nis: hh.user.nis, waktu: new Date(hh.submittedAt).toLocaleString("id-ID"), jumlah: hh.detail.length });
+        styleDataRow(row, i % 2 !== 0);
+        row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
+      });
+
+      // Detail
+      const semuaPertanyaan = (k.indikator || []).flatMap(ind => (ind.pertanyaan || []).map(p => ({ ...p, namaIndikator: ind.nama })));
+      const wsDetail = wb.addWorksheet("Detail Jawaban", { properties: { tabColor: { argb: "FF4F46E5" } } });
+      const headerCols = [ { key: "nama", header: "Nama Siswa", width: 28 }, { key: "nis", header: "NIS", width: 14 }, ...semuaPertanyaan.map((p, i) => ({ key: `q${i}`, header: `[${p.namaIndikator}] ${p.teks.slice(0, 40)}${p.teks.length > 40 ? '...' : ''}`, width: 22 })) ];
+      wsDetail.columns = headerCols;
+      addSheetTitle(wsDetail, `Detail Jawaban: ${k.judul}`, `Total pertanyaan: ${semuaPertanyaan.length} · Diekspor: ${exportDate}`, headerCols.length);
+      const hDetail = wsDetail.addRow(headerCols.map(c => c.header));
+      styleHeader(hDetail, GRAY_HEADER);
+      hasil.forEach((hh: any, i: number) => {
+        const rowData: Record<string, any> = { nama: hh.user.name, nis: hh.user.nis };
+        semuaPertanyaan.forEach((p: any, idx: number) => {
+          const d = hh.detail.find((dd: any) => dd.pertanyaanId === p.id);
+          if (!d) { rowData[`q${idx}`] = "-"; return; }
+          if (p.jenis === "ESAI") rowData[`q${idx}`] = d.nilaiTeks || "-";
+          else if (p.jenis === "YA_TIDAK") rowData[`q${idx}`] = d.nilaiAngka === 1 ? "Ya" : "Tidak";
+          else if (p.jenis === "PILIHAN_GANDA") {
+            const opsi = (p.opsi || []).find((o: any) => o.id === d.nilaiOpsiId);
+            rowData[`q${idx}`] = opsi ? opsi.teks : d.nilaiAngka ?? "-";
+          } else rowData[`q${idx}`] = d.nilaiAngka ?? "-";
+        });
+        const row = wsDetail.addRow(rowData);
+        styleDataRow(row, i % 2 !== 0);
+      });
+      wsDetail.views = [{ state: "frozen", xSplit: 2, ySplit: 3 }];
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Hasil_Kuesioner_${k.judul.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setConfirmData({ open: true, title: "Gagal Ekspor", message: String(e), isAlert: true, onConfirm: () => setConfirmData({ open: false }) });
+    } finally { setExportingHasil(false); }
+  };
+
   const STATUS_STYLE: Record<StatusKuesioner, string> = {
     DRAFT: "bg-gray-100 dark:bg-gray-800 text-gray-500",
     AKTIF: "bg-emerald-50 dark:bg-emerald-950 text-emerald-600",
@@ -4047,34 +4150,84 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
           <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
             <h4 className="font-bold text-xs uppercase tracking-widest">Hasil Jawaban Siswa</h4>
-            <span className="text-[9px] text-gray-400 dark:text-gray-500">{hasil.length} responden</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] text-gray-400 dark:text-gray-500">{hasil.length} responden</span>
+              <button onClick={async () => {
+                  if (loadingHasil) return;
+                  if (!exportingHasil && hasil.length === 0) {
+                    await loadHasil();
+                    if ((hasil || []).length === 0) {
+                      setConfirmData({ open: true, title: "Ekspor", message: "Belum ada responden untuk diekspor.", isAlert: true, onConfirm: () => setConfirmData({ open: false }) });
+                      return;
+                    }
+                  }
+                  if (!exportingHasil) await exportHasilToExcel();
+                }}
+                disabled={exportingHasil || loadingHasil}
+                className="px-2 py-1 rounded-lg bg-emerald-500 text-white text-[11px] hover:bg-emerald-600 disabled:opacity-50 flex items-center gap-2">
+                <FileSpreadsheet size={14} /> {exportingHasil ? 'Mengekspor...' : 'Ekspor'}
+              </button>
+            </div>
           </div>
           {loadingHasil ? (
             <div className="py-8 flex items-center justify-center"><Activity size={18} className="animate-spin text-emerald-500" /></div>
           ) : hasil.length === 0 ? (
             <div className="py-8 text-center text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest">Belum ada yang mengisi</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-gray-50 dark:bg-gray-800 text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
-                  <tr>
-                    <th className="px-4 py-3">Siswa</th>
-                    <th className="px-4 py-3">NIS</th>
-                    <th className="px-4 py-3">Waktu Submit</th>
-                    <th className="px-4 py-3">Jawaban</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                  {hasil.map((h: any) => (
-                    <tr key={h.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <td className="px-4 py-3 font-bold text-gray-800 dark:text-gray-100">{h.user.name}</td>
-                      <td className="px-4 py-3 font-mono text-gray-500 dark:text-gray-400">{h.user.nis}</td>
-                      <td className="px-4 py-3 text-gray-400 dark:text-gray-500 text-[10px]">{new Date(h.submittedAt).toLocaleString("id-ID")}</td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-[10px]">{h.detail.length} jawaban</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-2 p-3">
+              {/* pagination controls */}
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] text-gray-500">Menampilkan {Math.min(hasil.length, page * pageSize + 1)} - {Math.min(hasil.length, (page + 1) * pageSize)} dari {hasil.length}</div>
+                <div className="flex items-center gap-2">
+                  <button disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}
+                    className="px-2 py-1 rounded-lg border text-[12px] text-gray-500 disabled:opacity-40">Prev</button>
+                  <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(0); }} className="text-[12px] border rounded-lg px-2 py-1">
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                  <button disabled={(page + 1) * pageSize >= hasil.length} onClick={() => setPage(p => p + 1)}
+                    className="px-2 py-1 rounded-lg border text-[12px] text-gray-500 disabled:opacity-40">Next</button>
+                </div>
+              </div>
+
+              {/* respondent list (accordion) */}
+              <div className="space-y-2">
+                {hasil.slice(page * pageSize, (page + 1) * pageSize).map((h: any) => (
+                  <div key={h.id} className="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
+                    <div className="px-3 py-2 flex items-center justify-between cursor-pointer" onClick={() => setExpandedResId(expandedResId === h.id ? null : h.id)}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">{(h.user.name || "-").charAt(0)}</div>
+                        <div>
+                          <div className="font-bold text-sm text-gray-800 dark:text-gray-100">{h.user.name}</div>
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400">{h.user.nis} • {new Date(h.submittedAt).toLocaleString("id-ID")}</div>
+                        </div>
+                      </div>
+                      <div className="text-gray-400">{expandedResId === h.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</div>
+                    </div>
+                    {expandedResId === h.id && (
+                      <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 text-[13px]">
+                        {(h.detail || []).map((d: any) => {
+                          // determine answer display
+                          let answer = "-";
+                          if (d.nilaiTeks) answer = d.nilaiTeks;
+                          else if (d.nilaiAngka !== undefined && d.nilaiAngka !== null) answer = String(d.nilaiAngka);
+                          else if (d.nilaiOpsiId) {
+                            const opt = d.pertanyaan?.opsi?.find((o: any) => o.id === d.nilaiOpsiId);
+                            answer = opt ? opt.teks : d.nilaiOpsiId;
+                          }
+                          return (
+                            <div key={d.id} className="mb-2">
+                              <div className="text-[12px] font-bold text-gray-800 dark:text-gray-100">{d.pertanyaan?.teks || 'Pertanyaan'}</div>
+                              <div className="text-[12px] text-gray-500 dark:text-gray-400 mt-1">{answer}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
