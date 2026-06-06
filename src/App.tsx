@@ -557,20 +557,7 @@ function ReactionButton({ type, emoji, count, active, disabled, onClick }: { typ
 }
 
 function IntervensiPage({ user }: { user: User }) {
-  // Admin: tampilkan panel kelola kuesioner
-  if (user.role === "ADMIN") {
-    return (
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="space-y-5">
-        <div>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Intervensi</h2>
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mt-1">Kelola Kuesioner & Program BK</p>
-        </div>
-        <AdminKuesionerPanel />
-      </motion.div>
-    );
-  }
-
-  // Siswa: tampilkan daftar kuesioner aktif untuk diisi
+  // Semua hooks di atas — wajib sebelum any conditional return
   const [list, setList] = useState<Kuesioner[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Kuesioner | null>(null);
@@ -588,8 +575,26 @@ function IntervensiPage({ user }: { user: User }) {
     }
   };
 
-  useEffect(() => { fetchKuesioner(); }, []);
+  useEffect(() => {
+    // Admin tidak butuh fetch daftar kuesioner di sini, ditangani AdminKuesionerPanel
+    if (user.role !== "ADMIN") fetchKuesioner();
+    else setLoading(false);
+  }, [user.role]);
 
+  // Admin: tampilkan panel kelola kuesioner
+  if (user.role === "ADMIN") {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="space-y-5">
+        <div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#10b981]">Intervensi</h2>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold mt-1">Kelola Kuesioner & Program BK</p>
+        </div>
+        <AdminKuesionerPanel />
+      </motion.div>
+    );
+  }
+
+  // Siswa: IsiKuesioner jika sudah pilih
   if (selected) return (
     <IsiKuesionerPage
       kuesioner={selected}
