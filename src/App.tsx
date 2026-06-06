@@ -950,29 +950,123 @@ function StudentDashboard({ user }: { user: User }) {
     if (user.role === "ADMIN") return "Monitoring korelasi emosional & kesehatan mental siswa hari ini.";
     const lastEntry = entries.length > 0 ? [...entries].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] : null;
     const mood = lastEntry?.mood || "Senang";
+    const combineMessages = (openers: string[], closers: string[]) =>
+      openers.flatMap((opener) => closers.map((closer) => `${opener} ${closer}`));
 
-    switch(mood) {
-      case "😄":
-      case "Senang":
-        return "Senang melihatmu ceria! Terus sebarkan energi positifmu hari ini.";
-      case "😌":
-      case "Tenang":
-        return "Mari jaga ketenangan ini bersama.";
-      case "😐":
-      case "Biasa":
-        return "Hari yang stabil adalah waktu yang tepat untuk bersyukur.";
-      case "😔":
-      case "Sedih":
-        return "Tidak apa-apa untuk merasa sedih. Ceritakan saja.";
-      case "😤":
-      case "Frustrasi":
-        return "Tarik napas dalam-dalam. Kamu lebih kuat.";
-      case "😴":
-      case "Lelah":
-        return "Kamu sudah hebat. Jangan lupa beristirahat.";
-      default:
-        return "Senang melihatmu ceria! Terus sebarkan energi positifmu.";
-    }
+    const senangMessages = combineMessages(
+      [
+        "Senang melihatmu ceria!",
+        "Wah, mood-mu bagus sekali.",
+        "Kamu sedang bersinar hari ini.",
+        "Energi positifmu terasa kuat.",
+      ],
+      [
+        "Terus sebarkan energi positifmu hari ini.",
+        "Pertahankan ritme baik ini ya.",
+        "Lanjutkan kebiasaan baikmu.",
+        "Jaga alurnya supaya tetap ringan.",
+        "Hari ini cocok untuk hal-hal produktif dan menyenangkan.",
+      ]
+    );
+
+    const tenangMessages = combineMessages(
+      [
+        "Mari jaga ketenangan ini bersama.",
+        "Tenang adalah ruang yang baik untuk berpikir jernih.",
+        "Ketenanganmu hari ini adalah modal yang bagus.",
+        "Nikmati momen tenang ini sambil tetap pelan-pelan melangkah.",
+      ],
+      [
+        "Pertahankan napasmu, pelan tapi pasti.",
+        "Kamu punya ruang yang baik untuk fokus dan merapikan pikiran.",
+        "Tidak semua hal harus dikejar cepat.",
+        "Saat hati tenang, keputusan sering terasa lebih jernih.",
+        "Ritme pelan hari ini tetap punya nilai besar.",
+      ]
+    );
+
+    const biasaMessages = combineMessages(
+      [
+        "Hari yang stabil adalah waktu yang tepat untuk bersyukur.",
+        "Tidak apa-apa jika hari ini terasa biasa saja.",
+        "Hari netral juga berharga.",
+        "Rutinitas yang tenang bisa jadi jeda yang kamu butuhkan.",
+      ],
+      [
+        "Yang penting kamu tetap berjalan.",
+        "Kamu tetap bergerak maju.",
+        "Langkah kecil yang konsisten tetap berarti besar.",
+        "Hari ini punya nilainya sendiri.",
+        "Tidak harus spektakuler untuk tetap bermakna.",
+      ]
+    );
+
+    const sedihMessages = combineMessages(
+      [
+        "Tidak apa-apa untuk merasa sedih.",
+        "Pelan-pelan ya, kamu tidak harus memikul semuanya sendiri.",
+        "Sedih itu valid.",
+        "Kamu tetap layak didengar meski hari ini terasa berat.",
+      ],
+      [
+        "Ceritakan saja kalau kamu butuh didengar.",
+        "Ambil waktu untuk memeluk diri sendiri.",
+        "Satu langkah kecil pun sudah cukup.",
+        "Kamu tidak perlu kuat terus-menerus.",
+        "Sedih bukan berarti gagal; itu tanda kamu sedang butuh jeda.",
+      ]
+    );
+
+    const frustrasiMessages = combineMessages(
+      [
+        "Tarik napas dalam-dalam.",
+        "Wajar kalau sedang frustrasi.",
+        "Frustrasi sering muncul saat beban menumpuk.",
+        "Ambil jeda sebentar dulu.",
+      ],
+      [
+        "Kamu lebih kuat dari yang kamu kira.",
+        "Kita urai pelan-pelan ya.",
+        "Lanjut lagi dengan kepala lebih ringan.",
+        "Turunkan tempo dan fokus ke satu hal saja.",
+        "Kamu boleh istirahat dulu sebelum melanjutkan.",
+      ]
+    );
+
+    const lelahMessages = combineMessages(
+      [
+        "Kamu sudah hebat.",
+        "Tubuh dan pikiranmu butuh jeda.",
+        "Kalau lelah, pelankan ritmemu dulu ya.",
+        "Istirahat kecil bisa bantu kamu kembali segar.",
+      ],
+      [
+        "Jangan lupa beristirahat.",
+        "Istirahat itu penting.",
+        "Pulihkan dulu tenagamu.",
+        "Beri dirimu ruang untuk berhenti sejenak.",
+        "Lanjut lagi nanti dengan tenaga baru.",
+      ]
+    );
+
+    const moodResponses: Record<string, string[]> = {
+      "😄": senangMessages,
+      Senang: senangMessages,
+      "😌": tenangMessages,
+      Tenang: tenangMessages,
+      "😐": biasaMessages,
+      Biasa: biasaMessages,
+      "😔": sedihMessages,
+      Sedih: sedihMessages,
+      "😤": frustrasiMessages,
+      Frustrasi: frustrasiMessages,
+      "😴": lelahMessages,
+      Lelah: lelahMessages,
+    };
+    const responses = moodResponses[mood] || moodResponses.Senang;
+    const selectedResponse = responses[Math.floor(Math.random() * responses.length)] || moodResponses.Senang[0];
+
+    return selectedResponse;
   };
 
   return (
@@ -4065,16 +4159,16 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
       });
 
       // Detail
-      const semuaPertanyaan = (k.indikator || []).flatMap(ind => (ind.pertanyaan || []).map(p => ({ ...p, namaIndikator: ind.nama })));
+      const semuaPertanyaanAll = (k.indikator || []).flatMap(ind => (ind.pertanyaan || []).map(p => ({ ...p, namaIndikator: ind.nama })));
       const wsDetail = wb.addWorksheet("Detail Jawaban", { properties: { tabColor: { argb: "FF4F46E5" } } });
-      const headerCols = [ { key: "nama", header: "Nama Siswa", width: 28 }, { key: "nis", header: "NIS", width: 14 }, ...semuaPertanyaan.map((p, i) => ({ key: `q${i}`, header: `[${p.namaIndikator}] ${p.teks.slice(0, 40)}${p.teks.length > 40 ? '...' : ''}`, width: 22 })) ];
+      const headerCols = [ { key: "nama", header: "Nama Siswa", width: 28 }, { key: "nis", header: "NIS", width: 14 }, ...semuaPertanyaanAll.map((p, i) => ({ key: `q${i}`, header: `[${p.namaIndikator}] ${p.teks.slice(0, 40)}${p.teks.length > 40 ? '...' : ''}`, width: 22 })) ];
       wsDetail.columns = headerCols;
-      addSheetTitle(wsDetail, `Detail Jawaban: ${k.judul}`, `Total pertanyaan: ${semuaPertanyaan.length} · Diekspor: ${exportDate}`, headerCols.length);
+      addSheetTitle(wsDetail, `Detail Jawaban: ${k.judul}`, `Total pertanyaan: ${semuaPertanyaanAll.length} · Diekspor: ${exportDate}`, headerCols.length);
       const hDetail = wsDetail.addRow(headerCols.map(c => c.header));
       styleHeader(hDetail, GRAY_HEADER);
       hasil.forEach((hh: any, i: number) => {
         const rowData: Record<string, any> = { nama: hh.user.name, nis: hh.user.nis };
-        semuaPertanyaan.forEach((p: any, idx: number) => {
+        semuaPertanyaanAll.forEach((p: any, idx: number) => {
           const d = hh.detail.find((dd: any) => dd.pertanyaanId === p.id);
           if (!d) { rowData[`q${idx}`] = "-"; return; }
           if (p.jenis === "ESAI") rowData[`q${idx}`] = d.nilaiTeks || "-";

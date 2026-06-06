@@ -41,12 +41,21 @@ async function startServer() {
         const ip = req.headers['x-forwarded-for'] || req.ip || req.connection?.remoteAddress || null;
         const ua = req.headers['user-agent'] || null;
         const composed = ((details || '') + (ua ? `\nUA: ${ua}` : '')).trim() || null;
-        await prisma.auditLog.create({ data: { userId, action, details: composed, ipAddress: ip } });
+        const auditData: any = {};
+        auditData.userId = userId;
+        auditData.action = action;
+        auditData.details = composed;
+        auditData.ipAddress = ip;
+        await prisma.auditLog.create({ data: auditData });
       } else {
         const userId = reqOrUserId as string | null;
         const action = a as string;
         const details = b as string | undefined;
-        await prisma.auditLog.create({ data: { userId, action, details } });
+        const auditData: any = {};
+        auditData.userId = userId;
+        auditData.action = action;
+        auditData.details = details;
+        await prisma.auditLog.create({ data: auditData });
       }
     } catch (err) {
       console.error('Audit log failed:', err);
