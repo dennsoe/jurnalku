@@ -26,16 +26,35 @@ async function startServer() {
   const app = express();
   app.use(express.json());
 
-  // Middleware Audit Log
-  const createAuditLog = async (userId: string | null, action: string, details?: string) => {
+  // Middleware Audit Log (single, flexible helper)
+  // Usage:
+  //  - createAuditLog(userId, action, details?)
+  //  - createAuditLog(req, userId, action, details?) -> captures IP and User-Agent
+  const createAuditLog = async (reqOrUserId: any, a?: any, b?: any, c?: any) => {
     try {
-      await prisma.auditLog.create({
-        data: { userId, action, details },
-      });
+      // Detect signature by checking first arg
+      if (reqOrUserId && typeof reqOrUserId === 'object' && reqOrUserId.headers) {
+        const req = reqOrUserId as any;
+        const userId = a as string | null;
+        const action = b as string;
+        const details = c as string | undefined;
+        const ip = req.headers['x-forwarded-for'] || req.ip || req.connection?.remoteAddress || null;
+        const ua = req.headers['user-agent'] || null;
+        const composed = ((details || '') + (ua ? `\nUA: ${ua}` : '')).trim() || null;
+        await prisma.auditLog.create({ data: { userId, action, details: composed, ipAddress: ip } });
+      } else {
+        const userId = reqOrUserId as string | null;
+        const action = a as string;
+        const details = b as string | undefined;
+        await prisma.auditLog.create({ data: { userId, action, details } });
+      }
     } catch (err) {
-      console.error("Audit log failed:", err);
+      console.error('Audit log failed:', err);
     }
   };
+
+  // Backwards-compatible alias used in some call sites
+  const createAuditLogFromReq = createAuditLog;
 
   // --- API ROUTES ---
 
@@ -107,7 +126,7 @@ async function startServer() {
       loginAttempts.delete(nis);
       
       const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
-      await createAuditLog(user.id, "LOGIN", `User ${user.name} logged in`);
+      await createAuditLogFromReq(req, user.id, "LOGIN", `User ${user.name} logged in`);
 
       console.log(`Login successful for user: ${user.name}`);
       res.json({ token, user: { id: user.id, name: user.name, nis: user.nis, role: user.role } });
@@ -141,7 +160,7 @@ async function startServer() {
         data: { nis, name, password: hashedPassword, role: Role.STUDENT }
       });
 
-      await createAuditLog(user.id, "REGISTER", `New student registered: ${name}`);
+      await createAuditLogFromReq(req, user.id, "REGISTER", `New student registered: ${name}`);
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -184,7 +203,7 @@ async function startServer() {
         data: updateData,
       });
 
-      await createAuditLog(user.id, "UPDATE_PROFILE", `User updated their profile`);
+      await createAuditLogFromReq(req, user.id, "UPDATE_PROFILE", `User updated their profile`);
       res.json({ user: { id: updatedUser.id, name: updatedUser.name, nis: updatedUser.nis, role: updatedUser.role } });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -235,7 +254,7 @@ async function startServer() {
           userId: decoded.id,
         },
       });
-      await createAuditLog(decoded.id, "CREATE_ENTRY", `Created journal: ${title}`);
+      await createAuditLogFromReq(req, decoded.id, "CREATE_ENTRY", `Created journal: ${title}`);
       res.json(entry);
     } catch (err) {
       console.error(err);
@@ -263,7 +282,7 @@ async function startServer() {
         data: { title, body, mood, moodLabel, ref1, ref2, ref3 },
       });
 
-      await createAuditLog(decoded.id, "UPDATE_ENTRY", `Updated journal: ${id}`);
+      await createAuditLogFromReq(req, decoded.id, "UPDATE_ENTRY", `Updated journal: ${id}`);
       res.json(updatedEntry);
     } catch (err) {
       console.error(err);
@@ -290,7 +309,7 @@ async function startServer() {
       }
 
       await prisma.entry.delete({ where: { id } });
-      await createAuditLog(decoded.id, "DELETE_ENTRY", `Deleted journal: ${id} by ${user?.role}`);
+      await createAuditLogFromReq(req, decoded.id, "DELETE_ENTRY", `Deleted journal: ${id} by ${user?.role}`);
       res.json({ success: true });
     } catch (err) {
       console.error(err);
@@ -334,7 +353,7 @@ async function startServer() {
         }
       });
 
-      await createAuditLog(decoded.id, "ADD_COMMENT", `Added comment to journal: ${entryId}`);
+      await createAuditLogFromReq(req, decoded.id, "ADD_COMMENT", `Added comment to journal: ${entryId}`);
       res.json(comment);
     } catch (err) {
       console.error(err);
@@ -392,7 +411,7 @@ async function startServer() {
       }
 
       await prisma.comment.delete({ where: { id } });
-      await createAuditLog(decoded.id, "DELETE_COMMENT", `Deleted comment: ${id}`);
+      await createAuditLogFromReq(req, decoded.id, "DELETE_COMMENT", `Deleted comment: ${id}`);
       res.json({ success: true });
     } catch (err) {
       console.error(err);
@@ -831,7 +850,7 @@ async function startServer() {
           }
         }
       });
-      await createAuditLog(decoded.id, "SUBMIT_KUESIONER", `Submitted kuesioner: ${kuesionerId}`);
+      await createAuditLogFromReq(req, decoded.id, "SUBMIT_KUESIONER", `Submitted kuesioner: ${kuesionerId}`);
       res.json(result);
     } catch (err: any) {
       res.status(500).json({ error: err.message });

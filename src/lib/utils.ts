@@ -45,3 +45,17 @@ export async function apiFetch(endpoint: string, options: any = {}) {
     }
   }
 }
+
+// Format tanggal/waktu lokal Indonesia (WIB) secara konsisten
+export function formatDate(dateInput: string | Date | number, options?: Intl.DateTimeFormatOptions) {
+  const d = typeof dateInput === 'string' || typeof dateInput === 'number' ? new Date(dateInput) : dateInput;
+  const opts: Intl.DateTimeFormatOptions = { timeZone: 'Asia/Jakarta', ...(options || {}) };
+  return d.toLocaleString('id-ID', opts);
+}
+
+// Format tanggal yang aman untuk nama file (YYYY-MM-DD)
+export function formatDateForFilename(dateInput: string | Date | number) {
+  const d = typeof dateInput === 'string' || typeof dateInput === 'number' ? new Date(dateInput) : dateInput;
+  // Use ISO-like yyyy-mm-dd via toLocaleDateString with sv-SE locale then replace
+  return d.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
+}

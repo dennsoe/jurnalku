@@ -62,7 +62,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { cn, MOODS, apiFetch } from "./lib/utils";
+import { cn, MOODS, apiFetch, formatDate, formatDateForFilename } from "./lib/utils";
 
 // ===== THEME SYSTEM =====
 type Theme = 'light' | 'dark' | 'system';
@@ -673,7 +673,7 @@ function IntervensiPage({ user }: { user: User }) {
                       </span>
                       {sudahDiisi && k.jawaban?.[0] && (
                         <span className="text-[9px] text-emerald-500 flex items-center gap-1">
-                          <Calendar size={10} /> {new Date(k.jawaban[0].submittedAt).toLocaleDateString("id-ID")}
+                          <Calendar size={10} /> {formatDate(new Date(k.jawaban[0].submittedAt), { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
                     </div>
@@ -984,7 +984,7 @@ function StudentDashboard({ user }: { user: User }) {
         </div>
         <div className="self-start sm:self-center bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 rounded-lg px-2 py-1 text-[8px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
           <Calendar size={9} />
-          {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}
+          {formatDate(new Date(), { day: 'numeric', month: 'long' })}
         </div>
       </header>
 
@@ -1096,7 +1096,7 @@ function EntryCard({ entry, onUpdate }: { entry: Entry, onUpdate?: () => void })
         </div>
         <div className="text-right">
           <p className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 uppercase tracking-tighter font-mono">
-            {new Date(entry.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+            {formatDate(entry.createdAt, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
           </p>
           <ChevronRight size={12} className="ml-auto mt-1 text-gray-200 dark:text-gray-700 group-hover:text-emerald-600/50 group-hover:translate-x-1 transition-all" />
         </div>
@@ -1411,7 +1411,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
                       <h3 className="font-serif text-base sm:text-lg font-bold truncate">{entry.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium">
-                          {new Date(entry.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          {formatDate(entry.createdAt, { day: 'numeric', month: 'long', year: 'numeric' })}
                         </p>
                         <span className="flex items-center gap-1 text-[9px] text-[#10b981] font-mono">
                           <Eye size={10} /> {viewCount}
@@ -1592,7 +1592,7 @@ function CommentSection({ entryId, comments, onCommentAdded, onCommentDeleted, l
                     <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400">{c.user.name}</span>
                     {c.user.role === "ADMIN" && <span className="text-[7px] bg-emerald-100 text-emerald-600 px-1 rounded uppercase font-bold tracking-tighter">Admin</span>}
                   </div>
-                  <span className="text-[7px] text-gray-200 dark:text-gray-700 uppercase font-mono">{new Date(c.createdAt).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
+                  <span className="text-[7px] text-gray-200 dark:text-gray-700 uppercase font-mono">{formatDate(c.createdAt, { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-2 rounded-lg rounded-tl-none relative group">
                   <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-relaxed">{c.body}</p>
@@ -2102,7 +2102,7 @@ function HistoryPage({ user }: { user: User }) {
                                       </div>
                                       <div>
                                         <p className="text-xs font-bold text-gray-800 dark:text-gray-100">{jwb.user.name}</p>
-                                        <p className="text-[9px] text-gray-400 dark:text-gray-500 font-mono">{jwb.user.nis} · {new Date(jwb.submittedAt).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                                        <p className="text-[9px] text-gray-400 dark:text-gray-500 font-mono">{jwb.user.nis} · {formatDate(jwb.submittedAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
@@ -2185,7 +2185,7 @@ function HistoryPage({ user }: { user: User }) {
                       <h3 className="font-bold text-sm text-gray-800 dark:text-gray-100 mb-1 leading-tight">{r.kuesioner.judul}</h3>
                       {r.kuesioner.deskripsi && <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed line-clamp-1">{r.kuesioner.deskripsi}</p>}
                       <div className="flex items-center gap-3 mt-2 text-[9px] text-gray-400 dark:text-gray-500 flex-wrap">
-                        <span className="flex items-center gap-1"><Calendar size={9} /> {new Date(r.submittedAt).toLocaleString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                        <span className="flex items-center gap-1"><Calendar size={9} /> {formatDate(r.submittedAt, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                         <span className="flex items-center gap-1"><FileQuestion size={9} /> {r.detail.length} Jawaban</span>
                       </div>
                     </div>
@@ -2877,7 +2877,7 @@ function AdminMonitor({ user }: { user: User }) {
         ws.addRow([]);
       };
 
-      const exportDate = new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" });
+      const exportDate = formatDate(new Date(), { dateStyle: "full", timeStyle: "short" });
 
       // =====================
       // SHEET 1: RINGKASAN
@@ -2969,7 +2969,7 @@ function AdminMonitor({ user }: { user: User }) {
           reaksi: e.reactions?.length || 0,
           komentar: e._count?.comments || 0,
           viewCount: e.viewCount || 0,
-          tanggal: new Date(e.createdAt).toLocaleString("id-ID"),
+          tanggal: formatDate(e.createdAt),
         });
         styleDataRow(row, i % 2 !== 0);
         row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
@@ -3005,7 +3005,7 @@ function AdminMonitor({ user }: { user: User }) {
           nama: u.name,
           status: u.status === "ACTIVE" ? "Aktif" : "Nonaktif",
           totalJurnal,
-          terdaftar: new Date(u.createdAt).toLocaleString("id-ID"),
+          terdaftar: formatDate(u.createdAt),
         });
         styleDataRow(row, i % 2 !== 0);
         const statusCell = row.getCell(4);
@@ -3036,7 +3036,7 @@ function AdminMonitor({ user }: { user: User }) {
       (stats.recentLogs || []).forEach((log: any, i: number) => {
         const row = wsLog.addRow({
           no: i + 1,
-          waktu: new Date(log.createdAt).toLocaleString("id-ID"),
+          waktu: formatDate(log.createdAt),
           pengguna: log.user?.name || "System",
           aksi: log.action || "",
           detail: log.details || "",
@@ -3300,7 +3300,7 @@ function AdminMonitor({ user }: { user: User }) {
                       <div className="flex-1 min-w-0">
                          <div className="flex items-center justify-between mb-1">
                             <h4 className="font-bold text-sm text-[#10b981] truncate pr-8">{e.title}</h4>
-                            <span className="text-[9px] text-gray-300 dark:text-gray-600 uppercase font-mono">{new Date(e.createdAt).toLocaleString("id-ID")}</span>
+                            <span className="text-[9px] text-gray-300 dark:text-gray-600 uppercase font-mono">{formatDate(e.createdAt)}</span>
                          </div>
                          <div className="flex items-center gap-2 mb-2">
                             <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-[8px] font-bold text-emerald-600 uppercase">{e.user?.name?.[0]}</div>
@@ -3389,7 +3389,7 @@ function AdminMonitor({ user }: { user: User }) {
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {stats.recentLogs.map((log: any) => (
                       <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-[10px] font-mono">
-                        <td className="px-6 py-4 text-gray-400 dark:text-gray-500 whitespace-nowrap">{new Date(log.createdAt).toLocaleString("id-ID")}</td>
+                        <td className="px-6 py-4 text-gray-400 dark:text-gray-500 whitespace-nowrap">{formatDate(log.createdAt)}</td>
                         <td className="px-6 py-4 font-bold text-[#10b981]">{log.user?.name?.split(' ')[0] || "System"}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={cn(
@@ -3485,7 +3485,7 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
       const wb = new ExcelJS.Workbook();
       wb.creator = "Jurnal Self Acceptance";
       wb.created = new Date();
-      const exportDate = new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" });
+      const exportDate = formatDate(new Date(), { dateStyle: "full", timeStyle: "short" });
 
       const ORANGE = "FFCD7F3F";
       const ORANGE_LIGHT = "FFFFF3E8";
@@ -3556,7 +3556,7 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
           no: i + 1,
           nama: h.user.name,
           nis: h.user.nis,
-          waktu: new Date(h.submittedAt).toLocaleString("id-ID"),
+          waktu: formatDate(h.submittedAt),
           jumlah: h.detail.length,
         });
         styleDataRow(row, i % 2 !== 0);
@@ -3597,7 +3597,7 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Hasil_Kuesioner_${selectedK.judul.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}.xlsx`;
+      a.download = `Hasil_Kuesioner_${selectedK.judul.replace(/[^a-zA-Z0-9]/g, "_")}_${formatDateForFilename(new Date())}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -3695,7 +3695,7 @@ function HasilKuesionerPanel({ stats }: { stats: any }) {
                     <tr key={h.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <td className="px-4 py-3 font-bold text-gray-800 dark:text-gray-100">{h.user.name}</td>
                       <td className="px-4 py-3 font-mono text-gray-500 dark:text-gray-400 text-[10px]">{h.user.nis}</td>
-                      <td className="px-4 py-3 text-gray-400 dark:text-gray-500 text-[10px]">{new Date(h.submittedAt).toLocaleString("id-ID")}</td>
+                      <td className="px-4 py-3 text-gray-400 dark:text-gray-500 text-[10px]">{formatDate(h.submittedAt)}</td>
                       <td className="px-4 py-3 text-center">
                         <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded text-[9px] font-bold">{h.detail.length}</span>
                       </td>
@@ -4004,7 +4004,7 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
       wb.creator = "Jurnal Self Acceptance";
       wb.created = new Date();
 
-      const exportDate = new Date().toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" });
+      const exportDate = formatDate(new Date(), { dateStyle: "full", timeStyle: "short" });
       const ORANGE = "FFCD7F3F";
       const ORANGE_LIGHT = "FFFFF3E8";
       const DARK_BG = "FF1A1D27";
@@ -4059,7 +4059,7 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
       const hRekap = wsRekap.addRow(wsRekap.columns.map((c: any) => c.header || c.key));
       styleHeader(hRekap, GRAY_HEADER);
       hasil.forEach((hh: any, i: number) => {
-        const row = wsRekap.addRow({ no: i + 1, nama: hh.user.name, nis: hh.user.nis, waktu: new Date(hh.submittedAt).toLocaleString("id-ID"), jumlah: hh.detail.length });
+        const row = wsRekap.addRow({ no: i + 1, nama: hh.user.name, nis: hh.user.nis, waktu: formatDate(hh.submittedAt), jumlah: hh.detail.length });
         styleDataRow(row, i % 2 !== 0);
         row.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
       });
@@ -4094,7 +4094,7 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Hasil_Kuesioner_${k.judul.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}.xlsx`;
+      a.download = `Hasil_Kuesioner_${k.judul.replace(/[^a-zA-Z0-9]/g, "_")}_${formatDateForFilename(new Date())}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -4200,7 +4200,7 @@ function AdminKuesionerDetail({ kuesioner, onBack, onRefresh }: { kuesioner: Kue
                         <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">{(h.user.name || "-").charAt(0)}</div>
                         <div>
                           <div className="font-bold text-sm text-gray-800 dark:text-gray-100">{h.user.name}</div>
-                          <div className="text-[11px] text-gray-500 dark:text-gray-400">{h.user.nis} • {new Date(h.submittedAt).toLocaleString("id-ID")}</div>
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400">{h.user.nis} • {formatDate(h.submittedAt)}</div>
                         </div>
                       </div>
                       <div className="text-gray-400">{expandedResId === h.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</div>
