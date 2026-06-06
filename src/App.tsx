@@ -251,6 +251,7 @@ export default function App() {
       {/* Top Nav */}
       <nav className="h-12 sm:h-14 border-b border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-2">
+          <img src="/jurnalku.png" alt="Jurnalku" className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover shadow-sm ring-1 ring-emerald-100 dark:ring-emerald-900/40" />
           <span className="font-serif text-base sm:text-lg font-bold text-[#10b981]">Jurnal Self Acceptance</span>
         </div>
         
@@ -425,6 +426,9 @@ function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
         className="w-full max-w-75 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 relative z-10 shadow-xl shadow-emerald-100/60 dark:shadow-gray-950"
       >
         <div className="mb-5 text-center">
+          <div className="mx-auto mb-3 w-16 h-16 rounded-2xl bg-white shadow-lg shadow-emerald-100/70 flex items-center justify-center ring-1 ring-emerald-100 dark:ring-emerald-900/40 overflow-hidden">
+            <img src="/jurnalku.png" alt="Jurnalku" className="w-full h-full object-cover" />
+          </div>
           <h1 className="font-serif text-xl font-bold text-[#10b981] mb-0.5">Jurnal Self Acceptance</h1>
           <p className="text-gray-500 dark:text-gray-400 text-[9px] tracking-[0.2em] uppercase">
             {isRegister ? "Registrasi Akun" : "Self Acceptance Portal SMK"}
@@ -1244,6 +1248,15 @@ function useSwipeDownToClose(onClose: () => void) {
   return { y, onTouchStart, onTouchMove, onTouchEnd };
 }
 
+function ModalSwipeHandle() {
+  return (
+    <div className="mb-3 flex flex-col items-center gap-1.5 select-none sm:hidden" aria-hidden="true">
+      <div className="w-12 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700" />
+      <span className="text-[8px] uppercase tracking-[0.28em] font-bold text-gray-300 dark:text-gray-600">Tarik ke bawah untuk menutup</span>
+    </div>
+  );
+}
+
 function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: { 
   entry: Entry, 
   open: boolean, 
@@ -1383,7 +1396,7 @@ function JournalDetailModal({ entry, open, onClose, onUpdate, canEdit = true }: 
             onTouchEnd={swipeClose.onTouchEnd}
             className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-t sm:border border-gray-200 dark:border-gray-700 shadow-2xl shadow-gray-300/30 dark:shadow-gray-950 touch-pan-y"
           >
-            <div className="w-12 h-1 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto mb-3 sm:hidden" />
+            <ModalSwipeHandle />
             
             <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800 pb-3">
               <div>
@@ -2811,6 +2824,7 @@ function ConfirmModal({
         onTouchEnd={swipeClose.onTouchEnd}
         className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 w-full max-w-75 shadow-2xl shadow-gray-300/30 dark:shadow-gray-950"
       >
+        <ModalSwipeHandle />
         <div className={cn(
           "flex items-center gap-3 mb-3",
           confirmVariant === "danger" ? "text-red-500 dark:text-red-400" : (confirmVariant === "warning" ? "text-amber-500 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400")
@@ -4016,6 +4030,7 @@ function CreateKuesionerModal({ onClose, onCreated }: { onClose: () => void; onC
         onTouchMove={swipeClose.onTouchMove}
         onTouchEnd={swipeClose.onTouchEnd}
         className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 w-full max-w-md shadow-2xl touch-pan-y">
+        <ModalSwipeHandle />
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-sm uppercase tracking-widest">Buat Kuesioner Baru</h3>
           <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"><X size={16} /></button>
