@@ -952,122 +952,87 @@ function StudentDashboard({ user }: { user: User }) {
     : null;
   const popularMood = topMood ? Object.entries(topMood).sort((a: any, b: any) => b[1] - a[1])[0][0] : "—";
 
-  const getGreeting = () => {
-    if (user.role === "ADMIN") return "Monitoring korelasi emosional & kesehatan mental siswa hari ini.";
+  const getGreeting = (compact = false) => {
+    if (user.role === "ADMIN") {
+      return compact
+        ? "Monitoring emosi dan kesehatan mental siswa hari ini."
+        : "Monitoring korelasi emosional & kesehatan mental siswa hari ini.";
+    }
     const lastEntry = entries.length > 0 ? [...entries].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] : null;
     const mood = lastEntry?.mood || "Senang";
-    const combineMessages = (openers: string[], closers: string[]) =>
-      openers.flatMap((opener) => closers.map((closer) => `${opener} ${closer}`));
-
-    const senangMessages = combineMessages(
-      [
-        "Senang melihatmu ceria!",
-        "Wah, mood-mu bagus sekali.",
-        "Kamu sedang bersinar hari ini.",
-        "Energi positifmu terasa kuat.",
+    const moodResponses: Record<string, string[]> = {
+      "😄": [
+        "Senang melihatmu ceria. Terus sebarkan energi positifmu hari ini.",
+        "Wah, mood-mu bagus sekali. Pertahankan ritme baik ini ya.",
+        "Kamu sedang bersinar hari ini. Lanjutkan kebiasaan baikmu.",
+        "Energi positifmu terasa kuat. Jaga alurnya supaya tetap ringan.",
       ],
-      [
-        "Terus sebarkan energi positifmu hari ini.",
-        "Pertahankan ritme baik ini ya.",
-        "Lanjutkan kebiasaan baikmu.",
-        "Jaga alurnya supaya tetap ringan.",
-        "Hari ini cocok untuk hal-hal produktif dan menyenangkan.",
-      ]
-    );
-
-    const tenangMessages = combineMessages(
-      [
-        "Mari jaga ketenangan ini bersama.",
-        "Tenang adalah ruang yang baik untuk berpikir jernih.",
-        "Ketenanganmu hari ini adalah modal yang bagus.",
+      Senang: [
+        "Senang melihatmu ceria. Terus sebarkan energi positifmu hari ini.",
+        "Wah, mood-mu bagus sekali. Pertahankan ritme baik ini ya.",
+        "Kamu sedang bersinar hari ini. Lanjutkan kebiasaan baikmu.",
+        "Energi positifmu terasa kuat. Jaga alurnya supaya tetap ringan.",
+      ],
+      "😌": [
+        "Mari jaga ketenangan ini bersama. Tenang adalah ruang yang baik untuk berpikir jernih.",
+        "Ketenanganmu hari ini adalah modal yang bagus. Pertahankan napasmu, pelan tapi pasti.",
         "Nikmati momen tenang ini sambil tetap pelan-pelan melangkah.",
-      ],
-      [
-        "Pertahankan napasmu, pelan tapi pasti.",
-        "Kamu punya ruang yang baik untuk fokus dan merapikan pikiran.",
-        "Tidak semua hal harus dikejar cepat.",
         "Saat hati tenang, keputusan sering terasa lebih jernih.",
-        "Ritme pelan hari ini tetap punya nilai besar.",
-      ]
-    );
-
-    const biasaMessages = combineMessages(
-      [
-        "Hari yang stabil adalah waktu yang tepat untuk bersyukur.",
-        "Tidak apa-apa jika hari ini terasa biasa saja.",
-        "Hari netral juga berharga.",
+      ],
+      Tenang: [
+        "Mari jaga ketenangan ini bersama. Tenang adalah ruang yang baik untuk berpikir jernih.",
+        "Ketenanganmu hari ini adalah modal yang bagus. Pertahankan napasmu, pelan tapi pasti.",
+        "Nikmati momen tenang ini sambil tetap pelan-pelan melangkah.",
+        "Saat hati tenang, keputusan sering terasa lebih jernih.",
+      ],
+      "😐": [
+        "Hari yang stabil adalah waktu yang tepat untuk bersyukur. Yang penting kamu tetap berjalan.",
+        "Tidak apa-apa jika hari ini terasa biasa saja. Langkah kecil yang konsisten tetap berarti besar.",
+        "Hari netral juga berharga. Kamu tetap bergerak maju.",
         "Rutinitas yang tenang bisa jadi jeda yang kamu butuhkan.",
       ],
-      [
-        "Yang penting kamu tetap berjalan.",
-        "Kamu tetap bergerak maju.",
-        "Langkah kecil yang konsisten tetap berarti besar.",
-        "Hari ini punya nilainya sendiri.",
-        "Tidak harus spektakuler untuk tetap bermakna.",
-      ]
-    );
-
-    const sedihMessages = combineMessages(
-      [
-        "Tidak apa-apa untuk merasa sedih.",
+      Biasa: [
+        "Hari yang stabil adalah waktu yang tepat untuk bersyukur. Yang penting kamu tetap berjalan.",
+        "Tidak apa-apa jika hari ini terasa biasa saja. Langkah kecil yang konsisten tetap berarti besar.",
+        "Hari netral juga berharga. Kamu tetap bergerak maju.",
+        "Rutinitas yang tenang bisa jadi jeda yang kamu butuhkan.",
+      ],
+      "😔": [
+        "Tidak apa-apa untuk merasa sedih. Ceritakan saja kalau kamu butuh didengar.",
         "Pelan-pelan ya, kamu tidak harus memikul semuanya sendiri.",
-        "Sedih itu valid.",
-        "Kamu tetap layak didengar meski hari ini terasa berat.",
+        "Sedih itu valid. Ambil waktu untuk memeluk diri sendiri.",
+        "Hari yang berat tetap bisa dilalui satu langkah kecil demi satu langkah kecil.",
       ],
-      [
-        "Ceritakan saja kalau kamu butuh didengar.",
-        "Ambil waktu untuk memeluk diri sendiri.",
-        "Satu langkah kecil pun sudah cukup.",
-        "Kamu tidak perlu kuat terus-menerus.",
-        "Sedih bukan berarti gagal; itu tanda kamu sedang butuh jeda.",
-      ]
-    );
-
-    const frustrasiMessages = combineMessages(
-      [
-        "Tarik napas dalam-dalam.",
-        "Wajar kalau sedang frustrasi.",
-        "Frustrasi sering muncul saat beban menumpuk.",
-        "Ambil jeda sebentar dulu.",
+      Sedih: [
+        "Tidak apa-apa untuk merasa sedih. Ceritakan saja kalau kamu butuh didengar.",
+        "Pelan-pelan ya, kamu tidak harus memikul semuanya sendiri.",
+        "Sedih itu valid. Ambil waktu untuk memeluk diri sendiri.",
+        "Hari yang berat tetap bisa dilalui satu langkah kecil demi satu langkah kecil.",
       ],
-      [
-        "Kamu lebih kuat dari yang kamu kira.",
-        "Kita urai pelan-pelan ya.",
-        "Lanjut lagi dengan kepala lebih ringan.",
-        "Turunkan tempo dan fokus ke satu hal saja.",
+      "😤": [
+        "Tarik napas dalam-dalam. Wajar kalau sedang frustrasi.",
+        "Frustrasi sering muncul saat beban menumpuk. Kita urai pelan-pelan ya.",
+        "Ambil jeda sebentar dulu. Lanjut lagi dengan kepala lebih ringan.",
         "Kamu boleh istirahat dulu sebelum melanjutkan.",
-      ]
-    );
-
-    const lelahMessages = combineMessages(
-      [
-        "Kamu sudah hebat.",
-        "Tubuh dan pikiranmu butuh jeda.",
-        "Kalau lelah, pelankan ritmemu dulu ya.",
-        "Istirahat kecil bisa bantu kamu kembali segar.",
       ],
-      [
-        "Jangan lupa beristirahat.",
-        "Istirahat itu penting.",
-        "Pulihkan dulu tenagamu.",
+      Frustrasi: [
+        "Tarik napas dalam-dalam. Wajar kalau sedang frustrasi.",
+        "Frustrasi sering muncul saat beban menumpuk. Kita urai pelan-pelan ya.",
+        "Ambil jeda sebentar dulu. Lanjut lagi dengan kepala lebih ringan.",
+        "Kamu boleh istirahat dulu sebelum melanjutkan.",
+      ],
+      "😴": [
+        "Kamu sudah hebat. Tubuh dan pikiranmu butuh jeda.",
+        "Kalau lelah, pelankan ritmemu dulu ya. Istirahat itu penting.",
+        "Istirahat kecil bisa bantu kamu kembali segar.",
         "Beri dirimu ruang untuk berhenti sejenak.",
-        "Lanjut lagi nanti dengan tenaga baru.",
-      ]
-    );
-
-    const moodResponses: Record<string, string[]> = {
-      "😄": senangMessages,
-      Senang: senangMessages,
-      "😌": tenangMessages,
-      Tenang: tenangMessages,
-      "😐": biasaMessages,
-      Biasa: biasaMessages,
-      "😔": sedihMessages,
-      Sedih: sedihMessages,
-      "😤": frustrasiMessages,
-      Frustrasi: frustrasiMessages,
-      "😴": lelahMessages,
-      Lelah: lelahMessages,
+      ],
+      Lelah: [
+        "Kamu sudah hebat. Tubuh dan pikiranmu butuh jeda.",
+        "Kalau lelah, pelankan ritmemu dulu ya. Istirahat itu penting.",
+        "Istirahat kecil bisa bantu kamu kembali segar.",
+        "Beri dirimu ruang untuk berhenti sejenak.",
+      ],
     };
     const responses = moodResponses[mood] || moodResponses.Senang;
     const selectedResponse = responses[Math.floor(Math.random() * responses.length)] || moodResponses.Senang[0];
@@ -1078,9 +1043,11 @@ function StudentDashboard({ user }: { user: User }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           <h2 className="font-serif text-lg sm:text-xl font-bold mb-0.5">Halo, {user.name.split(' ')[0]}!</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-[10px] text-balance">{getGreeting()}</p>
+          <p className="max-w-none sm:max-w-md text-gray-500 dark:text-gray-400 text-[clamp(0.56rem,1.55vw,0.9rem)] leading-[1.15] sm:leading-relaxed text-pretty wrap-break-word">
+            {getGreeting()}
+          </p>
         </div>
         <div className="self-start sm:self-center bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 rounded-lg px-2 py-1 text-[8px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
           <Calendar size={9} />
