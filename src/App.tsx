@@ -914,6 +914,9 @@ function IsiKuesionerPage({ kuesioner, user, onBack }: { kuesioner: Kuesioner; u
 function StudentDashboard({ user }: { user: User }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [greetingVariant, setGreetingVariant] = useState(() => Date.now());
+  const lastGreetingUpdateRef = React.useRef(0);
 
   const fetchData = async () => {
     try {
@@ -930,6 +933,38 @@ function StudentDashboard({ user }: { user: User }) {
   useEffect(() => {
     if (user) fetchData();
   }, [user]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const updateGreetingSeed = () => {
+      const now = Date.now();
+      if (now - lastGreetingUpdateRef.current < 1500) return;
+      lastGreetingUpdateRef.current = now;
+      setGreetingVariant(prev => prev + 1);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") updateGreetingSeed();
+    };
+
+    window.addEventListener("focus", updateGreetingSeed);
+    window.addEventListener("pointerdown", updateGreetingSeed, { passive: true });
+    window.addEventListener("keydown", updateGreetingSeed);
+    window.addEventListener("scroll", updateGreetingSeed, { passive: true });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", updateGreetingSeed);
+      window.removeEventListener("pointerdown", updateGreetingSeed);
+      window.removeEventListener("keydown", updateGreetingSeed);
+      window.removeEventListener("scroll", updateGreetingSeed);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const getStreak = () => {
     if (entries.length === 0 || user.role === "ADMIN") return 0;
@@ -1035,7 +1070,9 @@ function StudentDashboard({ user }: { user: User }) {
       ],
     };
     const responses = moodResponses[mood] || moodResponses.Senang;
-    const selectedResponse = responses[Math.floor(Math.random() * responses.length)] || moodResponses.Senang[0];
+    const stableSeed = `${mood}-${lastEntry?.id || "no-entry"}-${lastEntry?.createdAt || ""}-${user.id}`;
+    const hash = stableSeed.split("").reduce((acc, char) => ((acc * 31) + char.charCodeAt(0)) >>> 0, 0);
+    const selectedResponse = responses[(hash + greetingVariant) % responses.length] || moodResponses.Senang[0];
 
     return selectedResponse;
   };
@@ -1051,7 +1088,12 @@ function StudentDashboard({ user }: { user: User }) {
         </div>
         <div className="self-start sm:self-center bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 rounded-lg px-2 py-1 text-[8px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
           <Calendar size={9} />
-          {formatDate(new Date(), { day: 'numeric', month: 'long' })}
+          <span className="whitespace-nowrap">
+            {formatDate(currentTime, { day: '2-digit', month: 'long', year: 'numeric' })}
+          </span>
+          <span className="text-emerald-500/70 normal-case tracking-[0.18em] whitespace-nowrap">
+            {formatDate(currentTime, { hour: '2-digit', minute: '2-digit', second: '2-digit' })} WIB
+          </span>
         </div>
       </header>
 
