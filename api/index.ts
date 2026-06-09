@@ -19,11 +19,32 @@ const app = express();
 app.use(express.json());
 
 // Middleware Audit Log
-const createAuditLog = async (userId: string | null, action: string, details?: string) => {
+const createAuditLog = async (reqOrUserId: any, a?: any, b?: any, c?: any) => {
   try {
-    await prisma.auditLog.create({
-      data: { userId, action, details },
-    });
+    if (reqOrUserId && typeof reqOrUserId === "object" && reqOrUserId.headers) {
+      const req = reqOrUserId as any;
+      const userId = a as string | null;
+      const action = b as string;
+      const details = c as string | undefined;
+      const ip = req.headers["x-forwarded-for"] || req.ip || req.connection?.remoteAddress || null;
+      const ua = req.headers["user-agent"] || null;
+      const composed = ((details || "") + (ua ? `\nUA: ${ua}` : "")).trim() || null;
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action,
+          details: composed,
+          ipAddress: ip,
+        },
+      });
+    } else {
+      const userId = reqOrUserId as string | null;
+      const action = a as string;
+      const details = b as string | undefined;
+      await prisma.auditLog.create({
+        data: { userId, action, details },
+      });
+    }
   } catch (err) {
     console.error("Audit log failed:", err);
   }
